@@ -2452,7 +2452,7 @@ void cpu_loop(CPUMIPSState *env)
     		//printf("syscall:%x,pc:%x,", trapnr, env->active_tc.PC); //NEED CHANGE env->active_tc.PC - gva_start[2]
     	    printf("syscall num:%d,arg a0 is:%x\n", syscall_num, env->active_tc.gpr[4]); //nb_args
     //      
-/*
+
             if(syscall_num == 106)
             {
                 char file_name[100];
@@ -2474,7 +2474,7 @@ void cpu_loop(CPUMIPSState *env)
                 cpu_memory_rw_debug(NULL, env->active_tc.gpr[4], file_name,  100, 0);
                 printf("%s\n", file_name);
             }
-*/
+
 
     		if(syscall_num == 1 || syscall_num == 246 | syscall_num == 2)
     		{
@@ -2510,8 +2510,8 @@ void cpu_loop(CPUMIPSState *env)
     		}
     		//else if(syscall_num ==169) //d-link dnsmasq
            // else if(syscall_num == 43) //dlink dnsmasq if we choose this, the memory state is different when restoring.
-            else if(syscall_num == 2) //D-link httpd
-           //else if(syscall_num == 142) // doprbear / tplink httpd _newselect, if we choose this, the memory state is different when restoring.
+             //else if(syscall_num == 2) //D-link httpd
+          else if(syscall_num == 142) // doprbear / tplink httpd _newselect, if we choose this, the memory state is different when restoring.
             //else if(syscall_num == 175) //4) //tplink httpd 
             // else if(syscall_num == 175 || syscall_num == 142 || syscall_num == 116) 
             //else if(syscall_num == 188) //Netgear lighttpd cannot go over the brk
@@ -2582,9 +2582,12 @@ void cpu_loop(CPUMIPSState *env)
                     user_mode = 1;
             }
             */
+            if(syscall_num != 45) //busybox
+            //if(syscall_num == 5 || syscall_num == 106 || (file_fd!=-1 &&env->active_tc.gpr[4]==file_fd)) //busybox
             //if(0)
+            //if(syscall_num == 4 || syscall_num == 175 || syscall_num == 182 || syscall_num == 6) //httpd
             //if(syscall_num == 5 || syscall_num == 106 || (file_fd!=-1 &&env->active_tc.gpr[4]==file_fd) || env->active_tc.gpr[4] == 2) //lighttpd
-            if((syscall_num == 5)||(file_fd!=-1 &&env->active_tc.gpr[4]==file_fd) || env->active_tc.gpr[4] == 2) //jhttpd
+            //if((syscall_num == 5)||(file_fd!=-1 &&env->active_tc.gpr[4]==file_fd) || env->active_tc.gpr[4] == 2) //jhttpd
             //if(syscall_num == 5 || syscall_num == 142 ||(file_fd!=-1 &&env->active_tc.gpr[4]==file_fd) || env->active_tc.gpr[4] == 2) //dropbear /dev/random 4142 user mode
             //if(syscall_num == 5 || syscall_num == 183 ||(file_fd!=-1 &&env->active_tc.gpr[4]==file_fd) || (sock_fd!=-1 &&env->active_tc.gpr[4]==sock_fd) ||env->active_tc.gpr[4] == 2) //dnsmasq
             //if(syscall_num == 184) //httpd
@@ -2608,13 +2611,43 @@ void cpu_loop(CPUMIPSState *env)
                 user_syscall_count++;
                 //ret = 9; //d-link dnsmasq
                 
-                //printf("direct system call\n");
+                //httpd
+                /*
+                if(syscall_num == 4)
+                {
+                    ret = env->active_tc.gpr[6];
+                }
+                else if(syscall_num == 175)
+                {
+                    char buf[1000];
+                    FILE * fp = fopen("/tplink_httpd_input","r");
+                    if(fp == NULL)
+                    {
+                        printf("read error\n");
+                    }
+                    int count = fread(buf, 1, 1000, fp);
+                    ret = count;
+                    //printf("recv1 count:%x, content:%s\n", count, buf);
+                    cpu_memory_rw_debug(cs, env->active_tc.gpr[5], buf, count, 0);
+                    env->active_tc.gpr[2] = count;
+                    fclose(fp);
+
+                }
+                else
+                {
+                    ret = 0;
+                }
+                
+                */
+
+                
                 ret = do_syscall(env, env->active_tc.gpr[2],
                              env->active_tc.gpr[4],
                              env->active_tc.gpr[5],
                              env->active_tc.gpr[6],
                              env->active_tc.gpr[7],
                              arg5, arg6, arg7, arg8);
+
 
                 if(syscall_num == 5)
                 {
@@ -5397,6 +5430,7 @@ int main(int argc, char **argv, char **envp)
         uintptr_t mmap_addr;
         int page_prot = gva_type[k] & 0x7;
 //jhttpd 
+/*        
         if(k == 11)
         {
             gva_end[k] = gva_start[k] + 0x5d000; 
@@ -5405,7 +5439,7 @@ int main(int argc, char **argv, char **envp)
         {
             gva_end[k] = gva_start[k] + 0x27000; //0x26000
         }
-        
+*/        
 //lighttpd
         /*
         if(k == 24)
@@ -5414,7 +5448,7 @@ int main(int argc, char **argv, char **envp)
         }
         */
         //if(page_prot == 0) // not to ask these page, or it will crash //lighttpd 24 //jhttpd 11 25
-        if(page_prot == 0 || k == 24) // not to ask these page, or it will crash //lighttpd 24 
+        if(page_prot == 0) // not to ask these page, or it will crash //lighttpd 24 
         //if(page_prot == 0 || k == 11 || k == 25) //jhttpd >=0x7d000 >=0x72000
         {
             continue; //PAGE_NONE

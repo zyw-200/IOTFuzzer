@@ -75,8 +75,8 @@ static unsigned char *afl_area_ptr;
 //#define FEED_INPUT
 #ifdef SNAPSHOT_SYNC
 char *phys_addr_stored_bitmap;
-int syn_shmem_id = 44466338; 
-target_ulong not_gencode_pc = 0x31000 + 0x77913000;//0x1000// 0x56000 //0x51000
+int syn_shmem_id = 73335017; 
+target_ulong not_gencode_pc = 0 ;//0x1000// 0x56000 //0x51000
 #endif
 //afl_entry_point = 0x400470;// brk
 //afl_entry_point = 0x40e054;// httpd d-link after open //0x4072f8; //httpd dlink after read
@@ -89,7 +89,7 @@ target_ulong not_gencode_pc = 0x31000 + 0x77913000;//0x1000// 0x56000 //0x51000
 //afl_entry_point = 0x40b088; // 0x40c000; //jjhttpd Trendnet after read
 //afl_entry_point = 0x40ced0; //lighttpd Netgear new after read
 //afl_entry_point = 0x400670;// sample
-abi_ulong afl_entry_point = 0x525698;   /* ELF entry point (_start) */
+abi_ulong afl_entry_point = 0x400120;   /* ELF entry point (_start) */
           afl_start_code,  /* .text start pointer      */
           afl_end_code;    /* .text end pointer        */
 
@@ -545,7 +545,7 @@ static void afl_wait_tsl(CPUState *cpu, int fd) {
           //else if(t.pc!= not_gencode_pc)
           if(t.pc!= not_gencode_pc)
           {
-            //printf("gen code:%x\n", t.pc);
+            printf("gen code:%x\n", t.pc);
 					  tb_gen_code(cpu, t.pc, t.cs_base, t.flags, 0);
           }
 					mmap_unlock();
