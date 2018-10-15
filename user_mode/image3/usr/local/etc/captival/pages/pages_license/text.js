@@ -1,0 +1,12 @@
+var main_title="Secure internet portal";
+var ssid_notice="Authentication for SSID:  ";
+var input_notice="Please enter your username and password or passcode to continue";
+var username="Username";
+var password="Password";
+var login="Login";
+var license_accept="I accept the terms and disclaimer agreement";
+var license_content="This is license.";
+var fail="Captival Portal Login Fail";
+var passcode="Passcode";
+var success="Success";
+var process="Processing...";

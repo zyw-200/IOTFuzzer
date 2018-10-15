@@ -1,0 +1,180 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script src="rsa_64.js"></script>
+<script src="text.js"></script>
+<script>
+function QueryString()
+{
+    var name,value,i;
+    var str=location.href;
+    var num=str.indexOf("?")
+            str=str.substr(num+1);
+    var arrtmp=str.split("&");
+    for(i=0; i < arrtmp.length; i++)
+    {
+        num=arrtmp[i].indexOf("=");
+        if(num>0)
+        {
+            name=arrtmp[i].substring(0,num);
+            value=arrtmp[i].substr(num+1);
+            this[name]=value;
+        }
+    }
+}
+
+function check()
+{
+	form1.ca_submit.disabled=true;
+
+	var rsa = new RSAKey();
+	rsa.setPublic(n,e);
+	
+	var plain_name=form1.ca_name.value;
+	plain_name=BASE64.encoder(plain_name);
+	var res_name = rsa.encrypt(plain_name);
+	var cipherb16_name = linebrk(res_name,64);
+	form1.ca_name.value = cipherb16_name;
+	
+	var plain_pass=form1.ca_pass.value;
+	plain_pass=BASE64.encoder(plain_pass);
+	var res_pass = rsa.encrypt(plain_pass);
+	var cipherb16_pass = linebrk(res_pass,64);
+	form1.ca_pass.value = cipherb16_pass;
+	
+	document.getElementById("form_header").style.display="none";
+	document.getElementById("box_header").style.display="";		
+}
+
+function ConfirmLicense()
+{
+	var License = license_content;
+	var result = confirm(License);
+	if (result == true) {
+		document.getElementById("login_simple_submit").disabled = false;
+		document.getElementById("login_simple_submit").style.opacity= 1;
+		document.getElementById("login_simple_submit").style.filter= 'alpha(opacity=100)';	/* For IE8 and earlier */
+		document.getElementById("login_simple_submit").style.filter.alpha = 70;
+	} 
+}
+
+function InitInput()
+{
+	var Request=new QueryString();
+	var key=Request["key"];
+	var type=Request["type"];
+	
+	document.getElementById("login_simple_submit").value=login;
+	document.getElementById("input_key").value = key;
+	document.getElementById("input_name").value = "";
+	document.getElementById("input_pass").value = "";
+	
+	document.getElementById("tr_pass").style.display="";
+			
+	if(type == 1 || type == 2)
+	{
+		document.getElementById("tr_name").style.display="";
+		document.getElementById("input_name").placeholder = username;	
+		document.getElementById("input_pass").placeholder = password;
+	}
+	else
+	{
+		document.getElementById("input_pass").placeholder = passcode;
+	}
+
+	if(type == 2 || type == 4)
+	{
+		document.getElementById("tr_fail").style.display="";
+	}
+}
+</script>
+<link rel="stylesheet" type="text/css" media="all" href="router.css"/>
+<!--[if lt IE 9]>
+<link rel="stylesheet" type="text/css" media="all" href="router-ie8.css"/>
+<![endif]-->
+<title></title>
+</head>
+<body onload="InitInput();" leftmargin="0" topmargin="0" class="login_simple" style="overflow-x: auto; overflow-y: auto;" marginheight="0" marginwidth="0">
+<center>
+<!-- ________________________________ Main Content Start ______________________________ -->
+	<table class="login_simple_table">
+		<tr >
+			<td class="login_simple_main_header" colspan="3"><script>document.write(main_title);</script></td>
+		</tr>
+		<tr>
+			<td class="login_simple_sub_header" colspan="3"><script>document.write(sub_title);</script></td>
+		</tr>
+		<tr class="table_margin_10px">
+		</tr>
+		<tr>		
+		<td class="login_simple_box_center" id="form_header">
+			<form name=form1 action="/submit.html" method="post" onsubmit="return check()" style="height: 248px; width: 100%;">
+				<table style="border-spacing: 0; margin: 0 auto; width:100%">
+					<tr class="table_margin_20px"></tr>
+					<!--[if lt IE 9]>
+					<td style="height: 20px;">
+					<![endif]-->
+					<tr class="table_margin_10px"></tr>	
+					<!--[if lt IE 9]>
+					<td style="height: 10px;">
+					<![endif]-->
+					<tr id="tr_key" style="display:none">
+						<td><input id="input_key" type="text" name="ca_key"/></td>						
+					</tr>
+					<tr id="tr_name" style="display:none">
+						<td style="width: 15%;"></td>
+						<td><input id="input_name" type="text" name="ca_name" class="login_simple_input"/></td>						
+						<td style="width: 15%;"></td>
+					</tr>	
+					<tr class="table_margin_10px"></tr>
+					<!--[if lt IE 9]>
+					<td style="height: 10px;">
+					<![endif]-->
+					<tr id="tr_pass" style="display:none;height: 37px">				
+						<td style="width: 15%;"></td>
+						<td><input id="input_pass" type="password" name="ca_pass" class="login_simple_input"/></td>						
+						<td style="width: 15%;"></td>
+					</tr>
+					<tr class="table_margin_10px"></tr>
+					<!--[if lt IE 9]>
+					<td style="height: 10px;">
+					<![endif]-->
+					<tr>
+						<td colspan="3" style="text-align: center;"><input id="login_simple_submit" type="submit" name="ca_submit" value="$login" disabled class="login_simple_login_button"/></td>
+					</tr>
+					<tr class="table_margin_10px"></tr>
+					<!--[if lt IE 9]>
+					<td style="height: 10px;">
+					<![endif]-->
+					<tr id="tr_fail" style="display:none;">
+						<td colspan="3" style="text-align: center; font-size: 12px; color: #FF0000"><script>document.write(fail);</script></td>
+					</tr>
+					<tr class="table_margin_10px"></tr>
+					<!--[if lt IE 9]>
+					<td style="height: 10px;">
+					<![endif]-->
+					<tr>
+						<td colspan="3" style="text-align: center; padding: 0 20px;"><script>document.write(license_notice);</script><a href="JavaScript:ConfirmLicense();" style="font-size: 13px; color: #0094BF;"><script>document.write(license_link);</script></a></td>
+					</tr>					
+				</table>
+			</form>							
+		</td>
+		<td class="login_simple_box_center" id="box_header" style="display:none">				
+				<table style="border-spacing: 0; margin: 0 auto; width:100%">
+					<tr class="table_margin_10px"></tr>	
+					<!--[if lt IE 9]>
+					<td style="height: 10px;">
+					<![endif]-->													
+					<tr><td colspan="3" style="text-align: center; font-size: 30px; color: #1C5FA0"><script>document.write(process);</script></td></tr>
+					<tr class="table_margin_10px"></tr>
+					<!--[if lt IE 9]>
+					<td style="height: 10px;">
+					<![endif]-->
+				</table>
+		</td>		
+		</tr>
+	</table>
+</center>
+</body>
+</html>

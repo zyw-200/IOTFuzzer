@@ -1,0 +1,55 @@
+#!/bin/sh
+
+# udhcpc script edited by Leo Lin
+
+[ -z "$1" ] && echo "Error: should be called from udhcpc" && exit 1
+
+ACT="act=$1"
+
+#List all env
+[ -n "$interface" ] && INTERFACE="interface=$interface"
+[ -n "$router" ] && ROUTER="router=$router"
+[ -n "$subnet" ] && SUBNET="subnet=$subnet"
+[ -n "$dhcptype" ] && DHCPTYPE="dhcptype=$dhcptype"
+[ -n "$domain" ] && DOMAIN="domain=$domain"
+[ -n "$wins" ] && WINS="wins=$wins"
+[ -n "$dns" ] && DNS="dns=$dns"
+[ -n "$serverid" ] && SERVERID="serverid=$serverid"
+
+#NETBIOS
+[ -n "$nodetype" ] && NODETYPE="nodetype=$nodetype"
+[ -n "$scope" ] && SCOPE="scope=$scope"
+
+[ -n "$ip" ] && IP="ip=$ip"
+[ -n "$lease" ] && LEASE="lease=$lease"
+[ -n "$ntpsrv" ] && NTPSRV="ntpsrv=$ntpsrv"
+[ -n "$mask" ] && MASK="mask=$mask"
+
+#boot from tftp
+[ -n "$tftp" ] && TFTP="tftp=$tftp"
+[ -n "$bootfile" ] && BOOTFILE="bootfile=$bootfile"
+
+#route
+[ -n "$fixroute" ] && FIXROUTE="fixroute=$fixroute"
+[ -n "$fixroute1" ] && FIXROUTE1="fixroute1=$fixroute1"
+[ -n "$fixroute2" ] && FIXROUTE2="fixroute2=$fixroute2"
+
+case "$1" in
+	deconfig|nak|leasefail|leasefailbg|leasesuccessbg|leaselost|timeout|init|probefail|probesuccess)
+		app_sync 1024 0 $ACT $INTERFACE "pid=$PID"
+		;;
+
+	renew|bound)
+		app_sync 1024 0 $ACT $INTERFACE $ROUTER $SUBNET $DHCPTYPE $DOMAIN $WINS $DNS $SERVERID $NODETYPE $SCOPE $IP $LEASE $NTPSRV $MASK $TFTP $BOOTFILE $FIXROUTE $FIXROUTE1 $FIXROUTE2 "pid=$PID"
+		;;
+		
+	6rd)
+		IPv6_6RD=$(cat "/var/tmp/6rddata")
+		app_sync 1046 0 $IPv6_6RD $INTERFACE
+#		rm -f /var/tmp/6rddata
+		;;
+		
+esac
+
+exit 0
+

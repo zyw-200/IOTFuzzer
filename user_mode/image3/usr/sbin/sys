@@ -1,0 +1,45 @@
+#!/bin/sh
+image_sign=`cat /etc/config/image_sign`
+usage="Usage: sys [-g|-s] [xml node] {value}"
+case "$1" in
+-g)
+
+	case "$2" in
+	uptime)
+		uptime seconly
+		;;
+	info/firmwareversion)
+		/etc/scripts/status/ver.sh
+		;;
+	info/lanmac)
+		/etc/scripts/status/lan.sh hwaddr
+		;;
+	esac
+	;;
+-s)
+	case "$2" in
+	configsave)
+		devconf get -f /var/rgdb.xml.gz
+		echo -ne "$image_sign\0" > /var/config.bin
+		cat /var/rgdb.xml.gz >> /var/config.bin
+		rm -f /var/rgdb.xml.gz
+		;;
+	restart)
+		/etc/scripts/misc/wan.sh stop
+		/etc/scripts/misc/nreboot.sh 3 &
+		;;
+	configrestore)
+		;;
+	factoryreset)
+		/etc/scripts/misc/wan.sh stop
+		/etc/scripts/misc/profile.sh reset
+		/etc/scripts/misc/profile.sh put
+		/etc/scripts/misc/nreboot.sh 3 &
+		;;
+	esac
+	;;
+*)
+	echo $usage
+	;;
+esac
+exit 0

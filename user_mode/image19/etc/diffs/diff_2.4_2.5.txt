@@ -1,0 +1,16 @@
+system:staSettings:staSettingTable:wlan0 t
+system:staSettings:staSettingTable:wlan0:sta0 t
+system:staSettings:staSettingTable:wlan0:sta0:clientStatus 0
+system:staSettings:staSettingTable:wlan0:sta0:ssid NETGEAR_11ng
+system:staSettings:staSettingTable:wlan0:sta0:authenticationType 0
+system:staSettings:staSettingTable:wlan0:sta0:encryption 0
+system:staSettings:staSettingTable:wlan0:sta0:presharedKey sharedsecret
+system:staSettings:staSettingTable:wlan0:sta0:wepKeyType 64
+system:staSettings:staSettingTable:wlan0:sta0:wepKeyNo 1
+system:staSettings:staSettingTable:wlan0:sta0:wepKey1 b6e6806317
+system:staSettings:staSettingTable:wlan0:sta0:wepKey2 8e6076fdbe
+system:staSettings:staSettingTable:wlan0:sta0:wepKey3 6acee09e76
+system:staSettings:staSettingTable:wlan0:sta0:wepKey4 e617b53cb2
+system:staSettings:staSettingTable:wlan0:sta0:wepPassPhrase sharedsecret
+system:staSettings:staSettingTable:wlan0:sta0:macClone 0
+system:staSettings:staSettingTable:wlan0:sta0:macCloneAddr 00-00-00-00-00-00

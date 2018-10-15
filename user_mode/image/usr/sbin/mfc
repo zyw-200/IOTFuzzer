@@ -1,0 +1,227 @@
+#!/bin/sh
+case "$1" in
+save)
+	/etc/scripts/dbsave.sh
+	;;
+freset)
+	devconf del
+	;;
+isfreset)
+	SIZE=`devconf dump | scut -p "Data size :" -f 1`
+	if [ "$SIZE" = "0" ]; then
+		echo "YES"
+	else
+		echo "NO"
+	fi
+	;;
+init)
+	if [ $# -lt 3 ]; then
+		echo "Usage:"
+		echo "  mfc init <mac1> <wanmac> <countrycode> <deviceip> <pin>"
+		exit 1
+	fi
+	LANMAC=`echo -e $2 | tr [A-Z] [a-z]`
+	WANMAC=`echo -e $3 | tr [A-Z] [a-z]`
+	CCODE="$4"
+	IP="$5"
+	PIN="$6"
+	[ "$LANMAC" != "" ] && DEVDATA="$DEVDATA -e lanmac=$LANMAC -e wlanmac=$LANMAC"
+	[ "$WANMAC" != "" ] && DEVDATA="$DEVDATA -e wanmac=$WANMAC"
+	[ "$CCODE" = "" ] && CCODE="US"
+	[ "$PIN" != "" ] && DEVDATA="$DEVDATA -e pin=$PIN"
+	echo "devdata set -e countrycode=$CCODE $DEVDATA -f" > /dev/console
+	devdata set -e countrycode=$CCODE $DEVDATA -f
+	# Save wireless MAC address to EEPROM
+	M1=`echo $LANMAC | cut -d: -f1`
+	M2=`echo $LANMAC | cut -d: -f2`
+	M3=`echo $LANMAC | cut -d: -f3`
+	M4=`echo $LANMAC | cut -d: -f4`
+	M5=`echo $LANMAC | cut -d: -f5`
+	M6=`echo $LANMAC | cut -d: -f6`
+	iwpriv ra0 e2p 04=$M2$M1
+	iwpriv ra0 e2p 06=$M4$M3
+	iwpriv ra0 e2p 08=$M6$M5
+	iwpriv rai0 e2p 04=$M2$M1
+	iwpriv rai0 e2p 06=$M4$M3
+	iwpriv rai0 e2p 08=$M6$M5
+	# Set MAC Address and IP Address into u-boot config.
+	[ "$LANMAC" != "" ] && UBCFG="$UBCFG ethaddr=$LANMAC"
+	[ "$IP" != "" ] && UBCFG="$UBCFG ipaddr=$IP"
+	echo "ubcfg set $UBCFG" > /dev/console
+	ubcfg set $UBCFG
+	# Show devdata and uboot data
+	echo "-------- devdata dump ----------------------" > /dev/console
+	devdata dump > /dev/console
+	echo "-------- ubcfg get ethaddr ipaddr-----------" > /dev/console
+	ubcfg get ethaddr ipaddr > /dev/console
+	echo "--------------------------------------------" > /dev/console
+	;;
+evm)
+	if [ $# -ne 11 ]; then
+		echo "Usage:"
+		echo "  mfc evm <INF> <ATETXFREQOFFSET> <ATETXMODE> <ATETXMCS> <ATETXBW> <ATETXLEN> <ATECHANNEL> <ATETXANT> <ATETXPOW0> <ATETXPOW1>"
+		exit 1
+	fi
+	INF=$2
+	iwpriv $INF set ATE=ATESTOP
+	iwpriv $INF set ATE=ATESTART
+	iwpriv $INF set ATEDA=FF:FF:FF:FF:FF:FF
+	iwpriv $INF set ATETXFREQOFFSET=$3
+	iwpriv $INF set ATETXMODE=$4
+	iwpriv $INF set ATETXMCS=$5
+	iwpriv $INF set ATETXBW=$6
+	iwpriv $INF set ATETXGI=0
+	iwpriv $INF set ATETXLEN=$7
+	iwpriv $INF set ATECHANNEL=$8
+	iwpriv $INF set ATETXANT=$9
+	iwpriv $INF set ATETXPOW0=${10}
+	iwpriv $INF set ATETXPOW1=${11}
+	iwpriv $INF set ATETXCNT=1000000
+	iwpriv $INF set ATE=TXFRAME
+	;;
+wlan5)
+	DATPATH="/var/run/RT2860.dat"
+	cp /etc/scripts/mfc/RT3662.dat $DATPATH
+	echo "" >> $DATPATH
+	case "$4" in
+	"HT20")
+		echo "HT_BW=0" >> $DATPATH
+		;;
+	"HT40")
+		echo "HT_BW=1" >> $DATPATH
+		echo "HT_EXTCHA=1" >> $DATPATH
+		;;
+	esac
+	echo "Channel=$3" >> $DATPATH
+	echo "SSID=$2" >> $DATPATH
+	killall wscd
+	ifconfig ra0 down
+	brctl delif br0 ra0
+	rmmod rt2860v2_ap
+	insmod /lib/modules/rt2860v2_ap.ko
+	ifconfig ra0 txqueuelen 1000
+	ifconfig ra0 up
+	brctl addif br0 ra0
+	brctl setbwctrl br0 ra0 900
+	echo 1 > /proc/net/br_forward_br0
+	;;
+wlan24)
+	DATPATH="/var/run/RT3090.dat"
+	cp /etc/scripts/mfc/RT3092.dat $DATPATH
+	echo "" >> $DATPATH
+	case "$4" in
+	"HT20")
+		echo "HT_BW=0" >> $DATPATH
+		;;
+	"HT40")
+		echo "HT_BW=1" >> $DATPATH
+		echo "HT_EXTCHA=1" >> $DATPATH
+		;;
+	esac
+	echo "Channel=$3" >> $DATPATH
+	echo "SSID=$2" >> $DATPATH
+	killall wscd
+	ifconfig rai0 down
+	brctl delif br0 rai0
+	rmmod RT3090_ap_net
+	rmmod RT3090_ap
+	rmmod RT3090_ap_util
+	insmod /lib/modules/RT3090_ap_util.ko
+	insmod /lib/modules/RT3090_ap.ko
+	insmod /lib/modules/RT3090_ap_net.ko
+	ifconfig rai0 up
+	brctl addif br0 rai0
+	brctl setbwctrl br0 rai0 900
+	echo 1 > /proc/net/br_forward_br0
+	;;
+dump)
+	devdata dump
+	;;
+ver)
+	echo Ver `cat /etc/config/buildver` Build `cat /etc/config/buildno`
+	;;
+get)
+	[ "$2" != "" ] && devdata get -e $2
+	;;
+test)
+	case $2 in
+	on)
+		usockc /var/gpio_ctrl DEBUG
+		;;
+	off)
+		usockc /var/gpio_ctrl NODEBUG
+		;;
+	esac
+	;;
+button)
+	case $2 in
+	reset)
+		usockc /var/gpio_ctrl GPIO_FRESET
+		cat /var/gpio_ctrl_result
+		;;
+	wps)
+		usockc /var/gpio_ctrl GPIO_WPSPBC
+		cat /var/gpio_ctrl_result
+		;;
+	esac
+	;;
+led)
+	case "$2" in
+	wps_blue)
+		usockc /var/gpio_ctrl WPS_BLUE
+		;;
+#	wps_red)
+#		usockc /var/gpio_ctrl WPS_RED
+#		;;
+	status_green)
+		usockc /var/gpio_ctrl STATUS_GREEN
+		;;
+	status_amber)
+		usockc /var/gpio_ctrl STATUS_AMBER
+		;;
+	inet_green)
+		usockc /var/gpio_ctrl INET_GREEN
+		;;
+	inet_amber)
+		usockc /var/gpio_ctrl INET_AMBER
+		;;
+	esac
+	;;
+*)
+	echo "Usage: mfc {command} <params>"
+	echo "Commands:"
+	echo "  init <lanmac> <wanmac> <countrycode> <deviceip> <pin>"
+	echo "                           Init flash"
+	echo "  save                     Save current setting to flash"
+	echo ""
+	echo "  evm <INF> <ATETXFREQOFFSET> <ATETXMODE> <ATETXMCS> <ATETXBW> <ATETXLEN>"
+	echo "       <ATECHANNEL> <ATETXANT> <ATETXPOW0> <ATETXPOW1>"
+	echo "                           save ATE wireless parameters for 5GHz or 2.4GHz band"
+	echo ""
+	echo "  wlan5  <ssid> <channel> <bandwidth>"
+	echo "  wlan24 <ssid> <channel> <bandwidth>"
+	echo "                           Config the wireless setting for testing."
+	echo "                           Where the 'bandwidth' should be the value of 'HT20' or 'HT40'."
+	echo "  dump                     Dump environment vairables."
+	echo "  ver                      Show firmware version"
+	echo ""
+	echo "  get <name>               Get current WAN mac address"
+	echo "  freset                   Factory reset"
+	echo "  isfreset                 Check if the device is reset to factory default."
+	echo ""
+	echo "  test on                  turn on test mode"
+	echo "  test off                 turn off test mode"
+	echo ""
+	echo "  button {reset|wps}"
+	echo "      reset                Get factory reset button status."
+	echo "      wps                  Get WPS button status."
+	echo ""
+	echo "  led {wps_blue|status_green|status_amber|inet_green|inet_amber}"
+	echo "      wps_blue             Turn on WPS blue led."
+#	echo "      wps_red              Turn on WPS red led."
+	echo "      status_green         Turn on power/status green led."
+	echo "      status_amber         Turn on power/status amber led."
+	echo "      inet_green           Turn on internet green led."
+	echo "      inet_amber           Turn on internet amber led."
+	;;
+esac

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<wrgnd08_dlob_dir815>
+	<device>
+		<session>
+			<dummy></dummy>
+		</session>
+	</device>
+	<runtime>
+		<device>
+			<layout />
+			<uptime get="uptime seconly" />
+			<date get="date +%m/%d/%Y" set="/etc/scripts/setdate.sh" />
+			<time get="date +%T" set="/etc/scripts/settime.sh" />
+			<rfc1123time get="date +'%a, %d %b %Y %X GMT' -u" />
+			<image_sign get="cat /etc/config/image_sign" />
+			<firmwareversion get="cat /etc/config/buildver"/>
+			<firmwarebuildrev get="cat /etc/config/buildrev"/>
+			<firmwarebuildno get="cat /etc/config/buildno"/>
+			<firmwarebuilddate get="cat /etc/config/builddate" />
+			<devconfsize get="devconf size" />
+		</device>
+		<genuuid get="genuuid -r" />
+	</runtime>
+</wrgnd08_dlob_dir815>

@@ -1,0 +1,108 @@
+#!/bin/sh
+
+. /etc/generic_include.sh
+
+if [ -z $1 ] || [ ! -f $1 ]; then
+	logger -s "Usage: $0 <config-file>"
+	exit 1
+fi
+
+# convert user specified file to unix format
+if [ "$1" = "/etc/default-config" ] || [ "$1" = "/tmp/fc_config" ]; then
+	dos2unix $1
+fi
+
+ps | grep sysmonitor.sh | awk '{print $1}' | xargs kill -9 > /dev/null 2>&1
+killall configd > /dev/null 2>&1
+
+logger -s "Restoring configuration from file $1."
+cp -f $1 /var/config
+if [ $? -ne 0 ];
+then
+	logger -s "Error copying config file $1."
+	exit 3
+fi
+
+#
+# If restoring default config file then update following fields in the config
+#	1. apName
+#	2. sysCountryRegion
+#
+if [ "$1" = "/etc/default-config" ]; then
+	logger -s "Generating AP name."
+	ETH_MAC3=`ifconfig $ETH_INTERFACE | grep HWaddr | cut -d ':' -f 5`
+	ETH_MAC4=`ifconfig $ETH_INTERFACE | grep HWaddr | cut -d ':' -f 6`
+	ETH_MAC5=`ifconfig $ETH_INTERFACE | grep HWaddr | cut -d ':' -f 7`
+	sed -i s/"xxxxxx"/"$ETH_MAC3$ETH_MAC4$ETH_MAC5"/ /var/config
+
+	# If region skew is worldwide then update sysCountryRegion to united kingdom(826)
+#	if [ -f /etc/board ]; then
+#		REGINFO=`grep reginfo /etc/board | awk '{print $3}'`
+#		if [ "$REGINFO" = "0" ]; then
+#			sed -i s/"system:basicSettings:sysCountryRegion 840"/"system:basicSettings:sysCountryRegion 826"/ /var/config
+#		fi
+#	fi
+fi
+
+#This is to revert the contents of the /var/config
+#if system:configVersion is in top of the /var/config the data returned from
+#the SNMP will be in reverse order
+#so checking and reverting the file contents here
+#this needs TAC to be available on the AP.
+if [ system:configVersion != `head -n 1 -q /var/config | cut -f1 -d ' '` ]; then
+	tac /var/config > /tmp/configFile
+	mv /tmp/configFile /var/config
+fi
+
+#Removing the /var/appstart file to update it with new changes
+if [ -e ${LOCOMATE} ]; then
+	if [ -f /var/appstart ]; then
+		rm -rf /var/appstart
+	fi
+	rm -rf /var/security.conf
+	rm -rf /var/keys
+fi		
+
+#Removing the Poduct Registration Turnoff and SerialRegistered file to prompt user to register the device
+if [ -f /var/Prod_Reg_Rem_TurnOff ]; then
+	rm -rf /var/Prod_Reg_Rem_TurnOff
+fi
+if [ -f /var/SerialRegistered ]; then
+	rm -rf /var/SerialRegistered
+fi
+
+# Make a copy of /etc/pal.cfg
+if [ ${CONFIG_CLOUD} = "yes" ]; then
+	if [ "$1" != "/tmp/fc_config" ]; then
+		logger -s "CLOUD: Making a fresh copy of pal.cfg"
+		cp /etc/pal.cfg /var/pal.cfg
+	fi
+fi
+
+if [ -f /var/backup_ip_n_vlan.txt ]; then
+	logger -s "Restoring minimal configurations..."
+	/usr/local/bin/upmigration.sh /var/backup_ip_n_vlan.txt /var/config
+	rm -rf /var/backup_ip_n_vlan.txt
+fi
+
+if [ ! -z $2 ] && [ "$2" = "no-cloud" ]; then
+       sed -i s/"system:basicSettings:cloudStatus.*"/"system:basicSettings:cloudStatus 0"/ /var/config
+       logger -s "AP Mode is changed to Standalone"
+       logger -s "Restoring Configuration to Default Config with Cloud Disabled"
+fi
+
+md5sum /var/config > /var/config.md5
+
+logger -s "Restore config is successfull."
+
+# Since this script replaces the config file, telling to flush in both cases.
+
+if [ ! -z $2 ] && [ "$2" = "no-reboot" ]; then
+	/bin/sync
+	configd > /dev/null 2>&1 &
+	/usr/local/bin/sysmonitor.sh > /dev/null 2>&1 &
+	exit 0
+else
+	/bin/sync
+	reboot
+fi

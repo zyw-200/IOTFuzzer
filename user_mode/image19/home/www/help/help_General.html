@@ -1,0 +1,64 @@
+
+<HTML>
+<HEAD>
+   <META http-equiv="Pragma" content="no-cache">
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <TITLE>General Help</TITLE>
+   <LINK REL=stylesheet HREF="../include/css/default.css" TYPE="text/css">
+</HEAD>
+
+<BODY class = "helppageattributes">
+ 
+
+<h1 align=center style='text-align:center'>General Help</h1>
+
+
+<hr size=4 width="80%" align=center>
+
+<h2><a name="general"></a>General</h2>
+
+<P>
+		This page lets you configure the cloud settings of your Access
+            Point. </P>
+                   
+<P><B>Cloud Enabled</B></P>
+			<P>This field is the configuration parameter which gives the cloud Agent running status. The options available are yes and no. If the cloud agent is currently running, then yes is selected otherwise no is selected. On the other hand if the user wants to stop the agent from running he needs to click on "no" and click on apply. If the user wants to run the cloud agent then the user needs to click on "yes" and apply. When the AP comes  with factory defaults the agent was already running and the user can see "yes" already selected in the GUI.</P>
+			<P>When the agent is running, it is connected to the cloud online service, registers itself with the service and then onwards helps the online service (Cloud WMS) to configure the AP, monitor the AP and receive notifications from the AP.</P>
+<P><B>Cloud Activation Status</B></P>
+			<P>There are two possible states defined for this value. This is a read only value in the GUI and displays the status of activation.</P>
+			<P>a) Pending -  The activation cycle must be started or is underway. The cloud agent could be running or not running in this state. Usually when the AP comes up with factory defaults, this is the usual default state. The change of state is usually from pending to activated.</P>
+			<P>b)	Activated   - The cloud agent has successfully completed an activation cycle against the cloud online service. An AP when added to the cloud using Serial Number to a location and when the agent communicates with the cloud and registers itself,  then the AP gets activated.</P>
+<P><B>Cloud Connectivity Status</B></P>
+			<P>There are two possible states and it represents the connection state of the agent with the cloud online service</P>
+			<P>a)	Connected - Agent is connected to the Cloud WMS and is currently communicating actively. The AP should be able to access internet for this.
+			</P>
+			<P>b)	Disconnected - Agent is not connected to the Cloud WMS is not able to communicate. The disconnection could happen due to cable plug off, internet down, unreachable gateway, DNS resolution problems etc. </P>
+			<P><B>	The Link to Cloud UI or Cloud WMS is wireless.netgear.com</B></P>
+			<P>The user can use this link to create and access cloud WMS account and add the AP to the cloud if not already added. The AP can be managed using a cloud account and monitor it. </P>
+			<P><B><a name="accessPointInformation"></a>Access Point Information</B></P> 
+           
+<P>The Access Point Information
+section displays information about the Access Point.</P>
+<UL type=disc>
+ <UL type=circle>
+  <LI><STRONG>Access Point Name:</STRONG> The Access Point's
+	NetBIOS name.</LI> 
+  <LI><STRONG>Ethernet MAC Address</STRONG>: The MAC Address of the Wireless
+	Access Point's Ethernet port.</LI>
+  <LI><STRONG>Wireless MAC Address for 2.4GHz</STRONG>: The MAC Address of the Wireless Access Point's wireless card when operating at 2.4GHz.</LI>
+  <LI><STRONG>Wireless MAC Address for 5GHz</STRONG>: The MAC Address of the Wireless Access Point's wireless card when operating at 5GHz.</LI>
+  <LI><STRONG>Country/Region</STRONG><B>:</B> The domain or region
+	for which the Wireless access point is licensed for use.</LI>
+  <LI><STRONG>Firmware Version</STRONG><B>:</B> The version of the
+	firmware currently installed.</LI>
+  <LI><STRONG>Serial Number</STRONG><B>:</B> The Serial Number of the
+	device.</LI>
+  <li><strong>Current Time: </strong>Displays the current system time of the access point.</li>
+  </UL>
+</UL>
+
+
+</BODY>
+
+</HTML>
+

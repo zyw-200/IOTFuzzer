@@ -1,0 +1,10 @@
+#!/bin/sh
+#/usr/sbin/rebootlog
+echo [$0] ... > /dev/console
+rgdb -i -s /rumtime/wlan/inf:1/autorekey/first 0 > /dev/console #add by log for autorekey
+rgdb -i -s /rumtime/wlan/inf:2/autorekey/first 0 > /dev/console #add by log for autorekey
+/etc/templates/wlan_run.sh stop > /dev/console
+/etc/templates/wan.sh stop      > /dev/console
+sleep 2
+echo 1 > /proc/rebootm
+

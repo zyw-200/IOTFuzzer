@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<wrgnd08_dlob_dir815>
+	<runtime>
+		<devdata>
+			<flashspeed get="devdata get -e flashspeed" />
+			<pin get="devdata get -e pin" />
+			<psk get="devdata get -e psk" />
+			<hwrev get="devdata get -e hwrev" />
+			<countrycode get="devdata get -e countrycode" />
+			<wanmac get="devdata get -e wanmac" />
+			<lanmac get="devdata get -e lanmac" />
+			<wlanmac get="devdata get -e wlanmac" />
+			<lanpack>/dev/mtdblock/5</lanpack>
+		</devdata>
+	</runtime>
+</wrgnd08_dlob_dir815>

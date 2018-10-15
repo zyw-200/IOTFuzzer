@@ -1,0 +1,7 @@
+system:dumpApConfigLogSettings t
+system:dumpApConfigLogSettings:dumpApConfigLogStatus 1
+system:dumpApConfigLogSettings:dumpApConfigLogScheduleStatus 0
+system:dumpApConfigLogSettings:s3BucketID or-ng-s3-aplog
+system:dumpApConfigLogSettings:s3Key AKIAIBIJ626RMKREDDKA
+system:dumpApConfigLogSettings:s3Secret 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
+system:dumpApConfigLogSettings:dumpApConfigLogsScheduleInterval 30

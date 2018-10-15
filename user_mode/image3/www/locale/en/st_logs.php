@@ -1,0 +1,42 @@
+<?
+$m_context_title	= "Log Settings";
+$m_normal_log = "Log Server Settings";
+$m_eu_log = "EU directive Syslog Server Settings";
+$m_log_setting_title = "Log Settings";
+$m_log_ip	=  "Log Server / IP Address ";
+$m_log_type = "Log Type";
+$m_system_activity	=  "System Activity";
+$m_wireless_activity	=  "Wireless Activity";
+$m_notice	=  "Notice";
+$m_smtp_setting_title = "Email Notification";
+$m_smtp = "Email Notification";
+$m_enable = "Enable";
+$m_smtp_ip = "Email Server Address";
+$m_smtp_from_email = "From Email Address";
+$m_smtp_to_email = "To Email Address";
+$m_email_log_schedule_title = "Email Log Schedule";
+$m_log_schedule = "Schedule";
+$m_log_schedule_msg = "hours or when Log is full";
+$m_smtp_name = "User Name";
+$m_smtp_password ="Password";
+$m_smtp_confirm_password ="Confirm Password";
+$m_smtp_port = "SMTP Port";
+$m_email_type ="Outgoing mail server (SMTP)";
+$m_internal = "Internal";
+$m_gmail = "Gmail";
+$m_homail = "Hotmail";
+$m_authentication = "Authentication";
+$m_ssltls = "SSL/TLS";
+
+$a_invalid_email = "Invalid Email Address !";
+$a_long_email_name = "The length of username in Email Address must be 1~64!";
+$a_invalid_log_ip		= "Invalid Log Server / IP Address !";
+$a_invalid_smtp_ip		= "Invalid Mail Server / IP Address !";
+$a_empty_user_name	="Please input the User Name.";
+$a_invalid_user_name	="The User Name is with invalid character. Please check it.";
+$a_first_blank_user_name	= "The first character of User Name can't be blank.";
+$a_invalid_new_password	="The Password is with invalid character. Please check it.";
+$a_first_end_blank = "The first character and last character can't be blank.";
+$a_password_not_matched	="The Password and Confirm Password are not matched.";
+$a_invalid_smtp_port = "Invalid SMTP Port !";
+?>

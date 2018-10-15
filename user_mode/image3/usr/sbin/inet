@@ -1,0 +1,235 @@
+#!/bin/sh
+CONSOLE=/dev/console;
+#echo "[$0] $1 $2 ...($#)" > $CONSOLE;
+
+INF=`xmldbc -ig /runtime/layout/lanif`;
+npath=/inet/entry:1/ipv6;
+nodes="valid mode ipaddr prefix linkipaddr linkprefix gateway";
+
+case "$1" in
+	init)
+		linkipaddr=`ip addr show $INF | grep inet6 | grep link | scut -f2 | sed -e 's/\(.*\)\/.*/\1/'`;	
+		linkprefix=`ip addr show $INF | grep inet6 | grep link | scut -f2 | sed -e 's/.*\/\(.*\)/\1/'`;
+		xmldbc -is /runtime$npath/linkipaddr $linkipaddr;
+		xmldbc -is /runtime$npath/linkprefix $linkprefix;
+		echo -e "[$INF]\\n\\tscope link ipaddr: $linkipaddr\\n\\tscope link prefix: $linkprefix" > $CONSOLE;
+	
+#		ip addr show $INF | grep inet6 | grep site 1>/dev/null 2>&1;
+#		if [ $? = 0 ]; then
+#			siteipaddr=`ip addr show $INF | grep inet6 | grep site | scut -f2 | sed -e 's/\(.*\)\/.*/\1/'`;
+#			siteprefix=`ip addr show $INF | grep inet6 | grep site | scut -f2 | sed -e 's/.*\/\(.*\)/\1/'`;
+#			xmldbc -is /runtime$npath/siteipaddr $siteipaddr;
+#			xmldbc -is /runtime$npath/siteprefix $siteprefix;
+#			echo -e "\\tscope site ipaddr: $siteipaddr\\n\\tscope site prefix: $siteprefix" > $CONSOLE;
+#		else
+#			xmldbc -is /runtime$npath/siteipaddr "";
+#			xmldbc -is /runtime$npath/siteprefix "";
+#		fi	
+		ip addr show $INF | grep inet6 | grep global 1>/dev/null 2>&1 ;	
+		if [ $? = 0 ]; then
+			globalipaddr=`ip addr show $INF | grep inet6 | grep global | scut -f2 | sed -e 's/\(.*\)\/.*/\1/'`;
+			globalprefix=`ip addr show $INF | grep inet6 | grep global | scut -f2 | sed -e 's/.*\/\(.*\)/\1/'`;
+			xmldbc -is /runtime$npath/ipaddr $globalipaddr;
+			xmldbc -is /runtime$npath/prefix $globalprefix;
+			echo -e "\\tscope global ipaddr: $globalipaddr\\n\\tscope global prefix: $globalprefix" > $CONSOLE;
+		else
+			xmldbc -is /runtime$npath/ipaddr "";
+			xmldbc -is /runtime$npath/prefix "";
+		fi
+		ip -f inet6 route show  | grep $INF | grep default 1>/dev/null 2>&1 ;
+		if [ $? = 0 ]; then
+			gateway=`ip -f inet6 route show  | grep $INF | grep default | scut -f3`;
+			xmldbc -is /runtime$npath/gateway $gateway;
+		fi	
+		echo -e "\\tgateway: $gateway\\n" > $CONSOLE;
+		xmldbc -is /runtime$npath/mode "auto";
+		;;
+
+	-g)
+		case "$2" in
+			entry:1/ipv6)
+				for i in $nodes; do
+					echo -e "$i:\\t`xmldbc -ig /runtime/inet/$2/$i`";
+				done
+				;;
+
+			entry:1/ipv6/*)
+				echo "`basename $2`: `xmldbc -ig /runtime/inet/$2`";
+				;;
+
+			*)
+				echo "Unknown node!!!" > $CONSOLE;
+				;;
+		esac
+		;;
+
+	-s)
+		case "$2" in
+			entry:1/ipv6)
+				echo -e "IPv6 nodes:\\t $nodes";
+				;;
+
+			entry:1/ipv6/*)
+				xmldbc -is /runtime/inet/$2 $3;
+				;;
+
+			*)
+				echo "Unknown node!!!" > $CONSOLE;
+				;;
+		esac
+		;;
+
+	-g6)
+		case "$2" in
+			dump)
+				echo "$npath";
+				for i in $nodes; do
+					echo -e "\\t$i:\\t`xmldbc -g $npath/$i`";
+				done
+				;;
+
+			*)
+				if [ ! -z $2 ]; then
+					for i in $nodes; do
+						if [ $2 = $i ]; then
+							xmldbc -g $npath/$i;
+							exit 0;
+						fi
+					done
+				fi
+				echo "Unknown Operation!!!";
+				;;
+		esac
+		;;
+
+	-s6)
+		if [ $# == 3 ]; then
+			for i in $nodes; do
+				if [ $2 = $i ]; then
+					xmldbc -s $npath/$i $3;
+					exit 0;
+				fi
+			done
+		fi
+		echo "Unknown Operation!!!";
+		;;
+
+	-g6r)
+		case "$2" in
+			dump)
+				echo "/runtime$npath";
+				for i in $nodes; do
+					echo -e "\\t$i:\\t`xmldbc -ig /runtime$npath/$i`";
+				done
+				;;
+
+			*)
+				if [ ! -z $2 ]; then
+					for i in $nodes; do
+						if [ $2 = $i ]; then
+							xmldbc -ig /runtime$npath/$i;
+							exit 0;
+						fi
+					done
+				fi
+				echo "Unknown Operation!!!";
+				;;
+		esac
+		;;
+
+	-s6r)
+		if [ $# == 3 ]; then
+			for i in $nodes; do
+				if [ $2 = $i ]; then
+					xmldbc -is /runtime$npath/$i $3;
+					exit 0;
+				fi
+			done
+		fi
+		echo "Unknown Operation!!!";
+		;;
+
+	dumpall)
+		/usr/sbin/inet -g6  dump;
+		/usr/sbin/inet -g6r dump;
+		;;
+
+	active)
+		valid=`/usr/sbin/inet -g6 valid`;
+		if [ $valid = 1 ]; then #Enable
+			echo "0" > /proc/sys/net/ipv6/conf/$INF/disable_ipv6;
+			echo "Enable IPv6" > $CONSOLE;
+
+			mode=`/usr/sbin/inet -g6 mode`;
+			if [ $mode = "auto" ]; then
+				ifconfig $INF down > $CONSOLE 2>&1;
+				ifconfig $INF up > $CONSOLE 2>&1; #reinit interface $INF to raise up ipv6 address
+				sleep 2;
+				/usr/sbin/inet init;
+				echo -n "Autoconfigure" > $CONSOLE;
+			elif [ $mode = "static" ]; then
+				ipaddr=`/usr/sbin/inet -g6 ipaddr`;
+				prefix=`/usr/sbin/inet -g6 prefix`;
+				lastmode=`/usr/sbin/inet -g6r mode`;
+				if [ $lastmode = "static" ]; then
+					oldipaddr=`/usr/sbin/inet -g6r ipaddr`; #retrieve LAST ip setting, Joe
+					oldip=`ip addr show $INF | grep inet6 | grep $oldipaddr`;
+					oldip2=`ip addr show $INF | grep inet6 | scut -f2 | grep $oldipaddr`;
+					if [ -n "$oldip" ]; then
+						ip -6 addr del $oldip2 dev $INF > $CONSOLE 2>&1;
+						if [ $? != 0 ]; then
+							echo "Cannot remove old setting stage 1." > $CONSOLE;
+						fi
+					fi
+			fi
+				ip -6 addr add $ipaddr/$prefix dev $INF > $CONSOLE 2>&1;
+				/usr/sbin/inet -s6r mode $mode;
+				/usr/sbin/inet -s6r ipaddr $ipaddr; #store current setting as RUNTIME, Joe
+				/usr/sbin/inet -s6r prefix $prefix;
+				linkipaddr=`ip addr show $INF | grep inet6 | grep link | scut -f2 | sed -e 's/\(.*\)\/.*/\1/'`;	
+					linkprefix=`ip addr show $INF | grep inet6 | grep link | scut -f2 | sed -e 's/.*\/\(.*\)/\1/'`;
+					xmldbc -is /runtime$npath/linkipaddr $linkipaddr;
+					xmldbc -is /runtime$npath/linkprefix $linkprefix;
+				if [ $? != 0 ]; then
+					exit 100;
+				fi
+				ip -6 addr show $INF > $CONSOLE 2>&1;
+				
+				gateway=`/usr/sbin/inet -g6 gateway`;
+				if [ -z $gateway ]; then
+					echo " without Gateway." > $CONSOLE;
+				else
+					rt=`ip -6 route show dev $INF | grep $gateway`;
+					if [ -n "$rt" ]; then
+						ip -6 route del $oldip2 via $gateway > $CONSOLE 2>&1;
+						if [ $? != 0 ]; then
+							echo "Cannot remove old setting stage 2." > $CONSOLE;
+						fi
+					fi
+					ip -6 route add $ipaddr/$prefix via $gateway > $CONSOLE 2>&1;
+					if [ $? != 0 ]; then
+						exit 102;
+					fi
+					echo " with Gateway." > $CONSOLE;
+					ip -6 route show $ipaddr/$prefix
+				fi
+
+			else
+				echo "Unknown mode!!!" > $CONSOLE;
+				exit 101;
+			fi
+
+		else
+#			echo "1" > /proc/sys/net/ipv6/conf/all/disable_ipv6;
+			echo "1" > /proc/sys/net/ipv6/conf/$INF/disable_ipv6;
+			ifconfig $INF down > $CONSOLE 2>&1;
+			ifconfig $INF up > $CONSOLE 2>&1; #reinit interface $INF to lay down ipv6 address
+			echo "Disable IPv6" > $CONSOLE;
+		fi
+		;;
+
+	*)
+		echo "Do nothing!!!" > $CONSOLE;
+		;;
+esac
+

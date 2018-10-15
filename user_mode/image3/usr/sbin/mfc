@@ -1,0 +1,325 @@
+#!/bin/sh
+case "$1" in
+save)
+	/etc/scripts/misc/profile.sh put
+	;;
+init)
+	LANMAC=`echo -e $2 | tr [A-Z] [a-z]`
+	WANMAC=`echo -e $2 | tr [A-Z] [a-z]`
+
+	#added for concurrent dual band AP, different MAC address for 2.4G and 5G wireless, 
+	#it is supposed to be "**:**:**:**:**:*0" for 2.4G MAC address, and "**:**:**:**:**:*8" for 5G MAC addr
+#	WLANMAC_A=`echo -e $2 | tr [A-Z] [a-z] | sed 's/0$/8/g'` 
+
+	HWREV=`echo -e $3 | tr [a-z] [A-Z]`
+	CCODE="$4"
+	PIN="$5"
+	[ "$LANMAC" != "" ] && DEVDATA="$DEVDATA -e lanmac=$LANMAC -e wlanmac=$LANMAC"
+	[ "$WANMAC" != "" ] && DEVDATA="$DEVDATA -e wanmac=$WANMAC"
+	[ "$CCODE" = "" ] && CCODE=840
+	[ "$PIN" != "" ] && DEVDATA="$DEVDATA -e pin=$PIN"
+	echo "devdata set -e countrycode=$CCODE -e hwrev=$HWREV $DEVDATA -f" > /dev/console
+	devdata set -e countrycode=$CCODE -e hwrev=$HWREV $DEVDATA -f
+	;;
+wlan_5)
+	rgdb -s /wlan/inf:2/enable 1
+	#rgdb -s /wlan/ch_mode 1
+	rgdb -s /wlan/inf:2/ssid "$2"
+	rgdb -s /wlan/inf:2/channel "$3"
+	rgdb -s /wlan/inf:2/autochannel 0	
+	rgdb -s /wlan/inf:2/authentication 0
+	rgdb -s /wlan/inf:2/wepmode 0
+	rgdb -s /wlan/inf:2/cwmmode 2
+	rgdb -i -s /runtime/mfc/testmode 1
+#	/etc/templates/wlan.sh restart
+	;;
+
+wlan_24)
+	rgdb -s /wlan/inf:1/enable 1
+	#rgdb -s /wlan/ch_mode 0
+	rgdb -s /wlan/inf:1/ssid "$2"
+	rgdb -s /wlan/inf:1/channel "$3"
+	rgdb -s /wlan/inf:1/autochannel 0		
+	rgdb -s /wlan/inf:1/authentication 0
+	rgdb -s /wlan/inf:1/wepmode 0
+	rgdb -s /wlan/inf:1/cwmmode 1	
+	rgdb -s /wlan/inf:1/coexistence/enable 0
+	rgdb -i -s /runtime/mfc/testmode 1
+#	/etc/templates/wlan.sh restart
+	;;
+
+wlan_active)
+	/etc/templates/wlan.sh restart
+        ;;
+
+wlan_status)
+	if [ $2 = "24g" ]; then
+		ifconfig ath0 "$3"
+	fi
+	if [ $2 = "5g" ]; then
+		ifconfig ath16 "$3"
+	fi
+	;;
+
+setcountrycode)
+    [ "$2" = "" ] && echo "usage error!" && exit 1
+    CCODE="$2"
+    devdata set -e countrycode=$CCODE
+    rgdb -i -s /runtime/layout/countrycode $CCODE
+	;;		
+
+setlanmac)
+    [ "$2" = "" ] && echo "usage error!" && exit 1
+    LANMAC=`echo -e $2 | tr [A-Z] [a-z]`
+#    WLANMAC_A=`echo -e $2 | tr [A-Z] [a-z] | sed 's/0$/8/g'` 
+    devdata set -e lanmac=$LANMAC -e wlanmac=$LANMAC
+	;;		
+setwanmac)
+    [ "$2" = "" ] && echo "usage error!" && exit 1
+    WANMAC=`echo -e $2 | tr [A-Z] [a-z]`
+    devdata set -e wanmac=$WANMAC
+	;;		
+
+setphase)
+    [ "$2" = "" ] && echo "usage error!" && exit 1
+    PHASE="$2"
+    devdata set -e mfc_phase=$PHASE
+       ;;
+
+getphase)
+        devdata get -e mfc_phase
+        ;;
+	
+gethwrev)
+	devdata get -e hwrev
+	;;
+getwanmac)
+	devdata get -e wanmac
+	;;
+getlanmac)
+	devdata get -e lanmac
+	;;
+getwlanmac)
+	devdata get -e wlanmac
+	;;
+getcountrycode)
+	devdata get -e countrycode
+	;;
+getpin)
+	devdata get -e pin
+	;;
+getwlan)
+	SSID=`rgdb -g /wlan/inf:1/ssid`
+	CHANNEL=`rgdb -g /wlan/inf:1/channel`
+	echo "2.4G"
+	echo "SSID=$SSID"
+	echo "Channel=$CHANNEL"
+	SSID=`rgdb -g /wlan/inf:2/ssid`
+	CHANNEL=`rgdb -g /wlan/inf:2/channel`
+	echo "5G"
+	echo "SSID=$SSID"
+	echo "Channel=$CHANNEL"
+	;;
+ver)
+	/etc/scripts/misc/ver.sh
+	;;
+dump)
+	VER=`/etc/scripts/misc/ver.sh`
+	HWREV=`devdata get -e hwrev`
+	LANMAC=`devdata get -e lanmac`
+	WANMAC=`devdata get -e wanmac`
+	WLANMAC=`devdata get -e wlanmac`
+	COUNTRYCODE=`devdata get -e countrycode`
+	PIN=`devdata get -e pin`
+	echo "Software Version:$VER"
+	echo "Hardware Version:$HWREV"
+	echo "LANMAC:$LANMAC"
+	echo "WANMAC:$WANMAC"
+	echo "WLANMAC:$WLANMAC"
+	echo "COUNTRYCODE:$COUNTRYCODE"
+        echo "Wireless setting:"
+	SSID=`rgdb -g /wlan/inf:1/ssid`
+	CHANNEL=`rgdb -g /wlan/inf:1/channel`
+	echo "2.4G"
+	echo "SSID=$SSID"
+	echo "Channel=$CHANNEL"
+	SSID=`rgdb -g /wlan/inf:2/ssid`
+	CHANNEL=`rgdb -g /wlan/inf:2/channel`
+	echo "5G"
+	echo "SSID=$SSID"
+	echo "Channel=$CHANNEL"
+	;;
+art)
+	case "$2" in
+	start)
+		echo "stop wireless..."
+#		[ -f /var/run/wlan_stop.sh ] && sh /var/run/wlan_stop.sh && sleep 15
+		echo "start ART..."
+#		insmod /lib/modules/adf.ko
+#		insmod /lib/modules/asf.ko
+#		insmod /lib/modules/ath_hal.ko
+#		insmod /lib/modules/ath_rate_atheros.ko
+#		insmod /lib/modules/ath_dfs.ko
+#		insmod /lib/modules/ath_dev.ko
+#		insmod /lib/modules/umac.ko testmode=1 ahbskip=1
+#		sleep 2
+#		insmod /lib/modules/ath_pktlog.ko
+#		cd /lib/
+#		export LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH
+		mknod /dev/caldata b 31 6
+		mknod /dev/dk0 c 63 0
+#		mknod /dev/dk1 c 63 1
+		lsmod|grep -q art
+		if [ $? -eq 1 ]; then
+			KERVAL=`uname -r|cut -d'-' -f1`
+			insmod /lib/modules/art.ko
+		fi
+		nart.out -console -instance 0&
+#		nart.out -console -instance 1&
+		;;
+	stop)
+		killall nart.out
+		lsmod|grep -q art
+		if [ $? -eq 0 ]; then
+			rmmod art.ko
+		fi
+		rm -rf /dev/caldata
+		rm -rf /dev/dk0
+		rm -rf /dev/dk1
+		lsmod|grep -q art
+		if [ $? -eq 0 ]; then echo "OOPS!!! Remove art.ko failed!!!"; fi
+		;;
+	esac
+	;;
+802.3)
+	echo "mode=$2"
+	case "$2" in
+	mode1)
+		echo "Test mode 1: Transmit waveform test"
+		ethreg -p 0 0x1d=0xb
+		ethreg -p 0 0x1e=0x9
+		ethreg -p 0 0x1d=0x4
+		ethreg -p 0 0x1e=0xfbbb
+		ethreg -p 0 0x00=0x8140
+		ethreg -p 0 0x09=0x2200
+		;;
+	mode2)
+		echo "Test mode 2: Transmit jitter test(MASTER mode)"
+		ethreg -p 0 0x1d=0xb
+		ethreg -p 0 0x1e=0x9
+		ethreg -p 0 0x1d=0x4
+		ethreg -p 0 0x1e=0xfbbb
+		ethreg -p 0 0x00=0x8140
+		ethreg -p 0 0x09=0x4200
+		;;
+	mode3)
+		echo "Test mode 3: Transmit jitter test(SLAVE mode)"
+		ethreg -p 0 0x1d=0xb
+		ethreg -p 0 0x1e=0x9
+		ethreg -p 0 0x1d=0x4
+		ethreg -p 0 0x1e=0xfbbb
+		ethreg -p 0 0x00=0x8140
+		ethreg -p 0 0x09=0x6200
+		;;
+	mode4)
+		echo "Test mode 4: Transmit distortion test"
+		ethreg -p 0 0x1d=0xb
+		ethreg -p 0 0x1e=0x9
+		ethreg -p 0 0x1d=0x4
+		ethreg -p 0 0x1e=0xfbbb
+		ethreg -p 0 0x00=0x8140
+		ethreg -p 0 0x09=0x8200
+		;;
+	esac
+	;;
+freset)
+	case "$2" in
+	enable)
+		fresetd &
+	;;
+	disable)
+		killall fresetd
+	;;
+	"")
+		/etc/scripts/misc/profile.sh reset
+#		/etc/scripts/misc/profile.sh put
+	;;
+	esac
+	;;
+button)
+	case "$2" in
+	reset)
+		gpioc -r 17
+	;;
+	esac
+	;;
+led)
+	case "$2" in
+	status)
+		gpioc -o 11
+		gpioc -f 11 0
+		gpioc -c 11
+		;;
+	boot)
+		echo "not support"
+		;;
+	lan)
+		echo "not support"
+		;;
+	wlan_5)
+		echo "not support"
+		;;
+	wlan_24)
+		echo "not support"
+		;;
+	off)
+		gpioc -o 11
+		gpioc -f 11 0
+		gpioc -w 11
+		;;
+	esac
+	;;
+*)
+	echo "Usage: mfc {command} <params>"
+	echo "Commands:"
+	echo "  init <lanmac> <hwrev> <countrycode> <pin>"
+	echo "                           Init flash"
+	echo "  save                     Save current setting to flash"
+	echo ""
+	echo "  dump                     Display current settings"
+	echo ""
+	echo "  wlan_5 <ssid> <channel>    change ssid and channel settings"
+	echo "  wlan_24 <ssid> <channel>    change ssid and channel settings"
+	echo "  wlan_active 		    active ssid and channel settings"
+	echo "  wlan_status <24g|5g> <up|down>  		    interface up/down on 24g/5g band"
+	echo "  setcountrycode <countrycode> Set countrycode"	
+	echo ""
+	echo "  gethwrev                 Get H/W revision"
+#	echo "  getwanmac                   Get current WAN mac address"
+	echo "  getlanmac                Get current LAN mac address"
+	echo "  getwlan                  Get ssid and channel for both 2.4G and 5G"
+	echo "  getcountrycode              Get current country code"
+        echo "  setphase <mfc phase> 	Set MFC phase(0/f1/f4/f4.5)"
+        echo "  getphase  		Get MFC phase"
+	echo "  getpin                   Get PIN"
+	echo "  ver                      Show firmware version"
+	echo ""
+#	echo "  clear                    Clear radio config"
+	echo "  art {start|stop}	 Start/Stop ART mode"
+	echo ""
+	echo "  freset                   Factory reset"
+	echo "  freset {enable|disable}  Enable/disable factory reset button."
+	echo "                           Note: You need to disable freset before button/led test."
+	echo ""
+	echo "  button {reset}"
+	echo "      reset                Get factory reset button status."
+	echo ""
+	echo "  led {off|status|boot|lan|wlan_5|wlan_24}"
+	echo "      off                  Turn off all the leds under test."
+	echo "      status               Turn on Status led(GREEN)."
+	echo "      boot                 Turn on Status led(RED)."
+	echo "      lan                  Turn on LAN led."
+	echo "      wlan_5               Turn on WLAN 5 GHz led."
+	echo "      wlan_24              Turn on WLAN 2.4 GHz led."
+	;;
+esac

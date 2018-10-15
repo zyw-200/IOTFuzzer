@@ -1,0 +1,2 @@
+<NewWPAEncryptionModes>TKIPEncryption</NewWPAEncryptionModes>
+<NewWPAAuthenticationMode>PSKAuthentication</NewWPAAuthenticationMode>

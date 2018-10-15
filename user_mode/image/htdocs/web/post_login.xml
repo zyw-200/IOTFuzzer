@@ -1,0 +1,28 @@
+HTTP/1.1 200 OK
+Content-Type: text/xml
+
+<?
+/*
+* Created by Kwest Wan 20071012
+* to support D-Link widget login check
+*/
+$hash = $_GET["hash"];
+$xml_head = fread("", "/htdocs/web/__login_head.xml");
+$file = "/var/run/password";
+$password = "";
+fwrite("w", $file, $password);
+fwrite("w", "/var/run/hash", $hash);
+$logined = "error";
+$logined = query("/runtime/widgetv2/logincheck");
+
+if($logined == "OK")
+{
+	$response = "OK"; 
+}
+else
+{
+	$response = "error";
+}
+
+echo $xml_head."<login>".$response."</login>";
+?>

@@ -1,0 +1,12 @@
+var main_title="Secure internet portal";
+var sub_title="Login in for secure internet access";
+var username="Username";
+var password="Password";
+var login="Login";
+var license_notice="Logging in indicates you have read and accepted the license";
+var license_link="Use Policy";
+var license_content="This is license.";
+var fail="Captival Portal Login Fail";
+var passcode="Passcode";
+var success="Success";
+var process="Processing...";

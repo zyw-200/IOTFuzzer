@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<wrgnd08_dlob_dir815>
+	<runtime>
+		<device>
+			<vendor>D-Link</vendor>
+			<fwinfosrv>wrpd.dlink.com.tw</fwinfosrv>
+			<fwinfopath>/router/firmware/query.asp</fwinfopath>
+		</device>
+	</runtime>
+</wrgnd08_dlob_dir815>

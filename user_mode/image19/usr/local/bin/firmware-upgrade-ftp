@@ -1,0 +1,28 @@
+#!/bin/sh
+
+export DIR=/usr/local/bin
+file_name=firmware_file
+
+if [ $# -ne 4 ];
+then
+	echo "$0 <username> <password> <Remote Host IP> <remote file>"
+	exit 1
+fi
+
+#Get the file from the given URL and store in /tmp directory
+#	wget -P /tmp $1
+	cd /tmp 
+	echo "*** Getting firmware file $4 using ftp server $3, user name is $1"
+	/usr/bin/ftpget -u $1 -p $2 $3 ${file_name} $4
+
+	if [ $? -ne 0 ]; then
+		echo "FTP get failed."
+		exit 1		
+	fi	
+
+	nohup $DIR/firmware-upgrade-file /tmp/$file_name > /tmp/nohup.out
+ 
+	if [ $? -ne 0 ]; then
+		exit 1
+	fi
+exit 0

@@ -1,0 +1,175 @@
+/* Copyright 2004 D-Link Systems, Inc. All Rights Reserved.
+-------------------------------------------------------------------------------- */
+
+html, div, h1, h2, h3, h4, p, ul, ol, li, dl, dt, dd, td, input, select, textarea
+{
+	font-family: Tahoma, Helvetica, Geneva, Arial, sans-serif;
+	font-size: 12px;
+}
+
+table.login_header_pic_top_pic
+{
+	width: 800px;
+	height:190px;
+	background-image: url("bg_top.png");
+	background-repeat: no-repeat;
+	background-size: 100% 140px;	
+}
+
+img.login_header_pic_logo_img
+{
+	padding: 15px 0 0 15px;
+	width: 180px;
+}
+
+@media (min-width: 768px)
+{
+	table.login_header_pic_top_pic
+	{
+		width: 768px;
+		height:183px;
+		background-size: 768px 183px;
+	}
+	
+	img.login_header_pic_logo_img
+	{
+		padding: 20px 0 0 20px;		
+		width: 100%;
+	}
+}
+
+@media (max-width: 480px)
+{
+	table.login_header_pic_top_pic
+	{		
+		height:91px;
+		background-size: 100% 91px;
+	}	
+	img.login_header_pic_logo_img
+	{
+		padding: 10px 0 0 10px;
+		width: 50%;
+	}
+}
+
+body.login_header_pic
+{
+	background-image: url("bg.png");
+}
+
+table.login_header_pic_table
+{
+	background: #F1F1F1;
+	border-spacing: 0;		
+	margin-top: 30px;	
+	text-align: left;
+}
+
+@media (max-width: 480px)
+{
+	table.login_header_pic_table
+	{
+		margin-top: 10px;
+	}
+}
+
+@media (min-width: 768px) {
+  table.login_header_pic_table {
+	width: 691px;
+  }
+}
+
+@media (max-width: 767px) and (min-width: 480px) {
+  table.login_header_pic_table {
+	width: 90%;
+  }
+}
+
+@media (max-width: 479px) {
+  table.login_header_pic_table {
+	width: 90%;
+  }
+}
+
+td.login_header_pic_main_header
+{
+	height: 28px;
+	font-size: 35px;
+	font-family: century gothic, Helvetica, Geneva, Arial, sans-serif;
+	color: #55C701;
+	text-align: center;
+}
+
+@media (max-width: 480px)
+{
+	td.login_header_pic_main_header
+	{
+		font-size: 30px;	
+	}
+}
+
+td.login_header_pic_sub_header
+{
+	height: 14px;
+	font-size: 15px;
+	font-family: century gothic, Helvetica, Geneva, Arial, sans-serif;
+	color: #848383;
+	text-align: center;
+	word-wrap:break-word;
+	max-width: 280px;
+}
+
+tr.table_margin_20px
+{
+	height: 20px;
+}
+
+tr.table_margin_10px
+{
+	height: 10px;
+}
+
+td.login_header_pic_input_td
+{
+	color: #202020;
+	font-size: 15px;
+	text-align: left;
+}
+
+td.login_header_pic_static_td
+{
+	width: 25%; 
+	text-align: right; 
+	font-size: 15px;
+}
+
+input.login_header_pic_input
+{
+	width: 72%;
+	height: 33px;
+	border: 0;
+	font-size: 15px;
+	background-color: #101010;
+	color: #F8F8F8;
+	outline: none;
+	padding-left: 5px
+}
+
+input.login_header_pic_login_button
+{
+	background-image: url("bott.png");
+	height: 53px;
+	width: 40%;	
+	border: 0px;
+	color: #FFFFFF;
+	font-size: 20px;	
+}
+
+@media (max-width: 450px) {
+  td.login_header_pic_static_td {
+	width: 20%;
+  }
+  input.login_header_pic_input{
+	width:80%;
+  }
+}

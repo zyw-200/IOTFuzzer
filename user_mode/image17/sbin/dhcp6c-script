@@ -1,0 +1,95 @@
+#!/bin/sh
+RESOLV_IPV4="/var/tmp/resolv.conf"
+RESOLV_IPV6="/var/tmp/resolv_ipv6.conf"
+RESOLV_CONF="/etc/resolv.conf"
+DHCP_PD="/var/tmp/dhcp_pd"
+DHCP_PD_OLD="/var/tmp/dhcp_pd.old"
+PREVIOUS_IAPD="/var/tmp/previous_iapd"
+IAPD_PRE=$(cat $PREVIOUS_IAPD)
+
+#echo "script!!"
+
+#echo "$new_domain_name"
+#echo $new_domain_name
+if [ -n "$new_domain_name" -o -n "$new_domain_name_servers" ]; then
+	rm -f $RESOLV_IPV6
+fi
+
+if [ -n "$new_domain_name_servers" ]; then
+	for nameserver in $new_domain_name_servers; do
+	   echo nameserver $nameserver >> $RESOLV_IPV6
+	done
+fi
+
+#IA_NA=
+#IA_PD=
+	
+if [ -f "/var/tmp/ianancc" ]; then
+	IA_NA=$(cat "/var/tmp/ianancc")
+	rm -f /var/tmp/ianancc
+fi
+if [ -f "/var/tmp/iapdncc" ]; then
+	IA_PD=$(cat "/var/tmp/iapdncc")
+	rm -f /var/tmp/iapdncc
+fi
+
+IANA_CMD=$IA_NA
+IAPD_CMD=$IA_PD
+	
+#echo $state	
+#echo $iface
+if [ "$state" == "RENEW" ]; then
+	if [ -n "$new_iapd_prefix" ]; then
+		#echo "app_sync 1044 0 act=renew state=$state iface=$iface"
+		#app_sync 1044 0 act=renew state=$state iface=$iface
+		echo "RENEW" > /var/tmp/setlanncc
+		#echo "RENEW > /var/tmp/setlanncc"
+	fi	
+elif [ "$state" == "INFOREQ" ]; then
+	#app_sync 1044 0 act=setdns state=$state iface=$iface domain="$new_domain_name" dnsserver="$new_domain_name_servers" sntp="$new_ntp_servers" 
+	echo "INFOREQ" > /var/tmp/setlanncc
+	#echo "INFOREQ > /var/tmp/setlanncc"
+else
+	#echo "SETLAN!!"
+	#app_sync 1044 0 act=setlan state=$state iface=$iface domain="$new_domain_name" dnsserver="$new_domain_name_servers" sntp="$new_ntp_servers" $IANA_CMD $IAPD_CMD
+	echo "SETLAN" > /var/tmp/setlanncc
+	#echo "SETLAN > /var/tmp/setlanncc"
+	#echo "app_sync 1044 0 act=setlan state=$state iface=$iface domain=$new_domain_name dnsserver=$new_domain_name_servers sntp=$new_ntp_servers $IANA_CMD $IAPD_CMD"
+
+	if [ -n "$new_iapd_prefix" ]; then
+		if [ -f $PREVIOUS_IAPD ]; then
+			#echo "$IAPD_PRE $new_iapd_prefix"
+			if [ "$new_iapd_prefix" != "$IAPD_PRE" ]; then
+					ip -6 route del $(cat $DHCP_PD_OLD | sed -n '1p')/$(cat $DHCP_PD_OLD | sed -n '2p') dev lo
+					#echo "ip -6 route del $(cat $DHCP_PD_OLD | sed -n '1p')/$(cat $DHCP_PD_OLD | sed -n '2p') dev lo"
+					#echo $new_iapd_prefix $IAPD_PRE
+					#app_sync 1044 0 act=setfw state=$state iface=$iface preiapd=$IAPD_PRE 
+					echo "SETFW" > /var/tmp/setfwncc
+					echo "$IAPD_PRE" > /var/tmp/IAPDPRE
+					#echo "SETFW > /var/tmp/setfwncc"
+					#echo "$IAPD_PRE > /var/tmp/IAPDPRE"
+					#echo "app_sync 1044 0 act=setfw state=$state iface=$iface $IAPD_PRE $new_iapd_prefix"			
+			fi
+		fi
+	fi
+fi	 
+
+if [ -n "$new_iapd_prefix" ]; then
+	echo "$new_iapd_prefix" > $PREVIOUS_IAPD
+	cp $DHCP_PD $DHCP_PD_OLD
+	killall -SIGTTIN dhcp6c
+fi
+
+if [ -n "$new_aftr_name" ]; then
+	#echo "script AFTR $new_aftr_name"
+	sleep 2
+	#app_sync 1044 0 act=setdslite state="$state" iface=$iface aftr="$new_aftr_name"
+	echo "SDSLITE" > /var/tmp/dslitencc
+	#echo "app_sync 1044 0 act=setdslite state=$state iface=$iface aftr=$new_aftr_name"
+	#echo "SDSLITE > /var/tmp/dslitencc"
+else 
+	#echo "script No AFTR"
+	#app_sync 1044 0 act=nodslite state="$state" iface=$iface
+	echo "NDSLITE" > /var/tmp/dslitencc
+	#echo "NDSLITE > /var/tmp/dslitencc"
+fi

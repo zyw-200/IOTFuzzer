@@ -1,0 +1,39 @@
+#!/bin/sh
+usage="Usage: time [-g|-s] [xml node]"
+case "$1" in
+"-g")
+	case "$2" in
+	time)
+		date +%H:%M:%S
+		;;
+	date)
+		date +%m/%d/%Y
+		;;
+	*)
+		echo $usage
+		;;
+	esac
+	;;
+"-s")
+	/etc/scripts/misc/timezone.sh
+	case "$2" in
+	time)
+		D=`date +%Y.%m.%d`
+		date -s "$D-$3" > /dev/null 2>&1
+		;;
+	date)
+		Y=`echo $3 | cut -d/ -f3`
+		M=`echo $3 | cut -d/ -f1`
+		D=`echo $3 | cut -d/ -f2`
+		T=`date +%H:%M:%S`
+		date -s "$Y.$M.$D-$T" > /dev/null 2>&1
+		;;
+	*)
+		echo $usage
+		;;
+	esac
+	;;
+*)
+	echo $usage
+	;;
+esac

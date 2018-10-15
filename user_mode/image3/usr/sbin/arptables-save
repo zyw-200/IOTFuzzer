@@ -1,0 +1,53 @@
+#!/usr/bin/perl -w
+#
+#
+# A script that generates text output of the arptables rules.
+# Similar to iptables-save.
+
+use strict;
+my $table;
+my $tool = "/usr/sbin/arptables";
+
+# ========================================================
+# Process filter table
+# ========================================================
+sub process_table {
+    my $chain = "";
+    my $rules = "";
+    my $chains = "";
+    my $custom_chains = "";
+    my $line = "";
+
+    foreach $line (split("\n",$_[0])) {
+        if ($line =~ m/Chain\s(.*?)\s\(policy\s(.*?)\s/) {
+            $chains = $chains . ":$1 $2\n";
+            $chain = $1;
+            next;
+        }
+        if ($line =~ m/Chain\s(.*?)\s\(/) {
+            $custom_chains = $custom_chains . ":$1 -\n";
+            $chain = $1;
+            next;
+        }
+        if ($line =~ m/^$/) {
+            next;
+        }
+	# Due to arptables "issues" with displaying device names
+        # we need to use -v and then do some processing
+	$line =~ s/\s,\s.*//;
+        $rules = $rules . "-A $chain $line\n";
+    }
+
+    print "*filter\n";
+    print $chains;
+    print $custom_chains;
+    print $rules;
+    print "\n";
+}
+# ========================================================
+
+unless (-x "$tool") { print "ERROR: Tool $tool isn't executable"; exit -1; };
+$table =`$tool -t filter -L -v`;
+unless ($? == 0) { print $table; exit -1 };
+&process_table($table);
+

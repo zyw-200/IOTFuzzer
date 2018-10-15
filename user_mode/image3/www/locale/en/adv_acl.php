@@ -1,0 +1,57 @@
+<?
+$m_context_title = "Wireless MAC ACL Settings";
+$m_acl_type = "Access Control List";
+$m_disable = "Disable";
+$m_accept = "Accept";
+$m_reject = "Reject";
+$m_wmac = "MAC Address";
+$m_id = "ID";
+$m_del = "Delete";
+$m_wband = "Wireless Band";
+$m_band_5G = "5GHz";
+$m_band_2.4G = "2.4GHz";
+$m_ssid = "SSID";
+$m_ssid_index = "SSID Index";
+$m_mac = "MAC Address";
+$m_band = "Band";
+$m_auth = "Authentication";
+$m_signal = "Signal";
+$m_power = "Power Saving Mode";
+$m_multi_ssid = "MULTI-SSID ";
+$m_select_ssid = "Select SSID";
+$m_primary_ssid = "Primary SSID";
+$m_ms_ssid1 = "SSID 1";
+$m_ms_ssid2 = "SSID 2";
+$m_ms_ssid3 = "SSID 3";
+$m_ms_ssid4 = "SSID 4";
+$m_ms_ssid5 = "SSID 5";
+$m_ms_ssid6 = "SSID 6";
+$m_ms_ssid7 = "SSID 7";
+$m_ms_ssid8 = "SSID 8";
+$m_ms_ssid9 = "SSID 9";
+$m_ms_ssid10 = "SSID 10";
+$m_ms_ssid11 = "SSID 11";
+$m_ms_ssid12 = "SSID 12";
+$m_ms_ssid13 = "SSID 13";
+$m_ms_ssid14 = "SSID 14";
+$m_ms_ssid15 = "SSID 15";
+$m_clirnt_info = "Current Client Information";
+$m_b_add = " Add ";
+
+$a_acl_del_confirm		= "Are you sure that you want to delete this mac address?";
+$a_same_acl_mac	= "There is an existent entry with the same MAC Address.\\n Please change the MAC Address.";
+$a_invalid_mac		= "Invalid MAC Address !";
+$a_max_acl_mac		= "Maximum number of Access Control List is 256!";
+$a_max_acl_mac_ipv6      = "Maximum number of Access Control List is 64!";
+$a_max_acl_mac_perssid = "Maximum number of Access Control List is 64!";
+$a_zone_defence_disable = "Zone defence would be disable.";
+$m_upload_acl_titles = "Upload ACL File";
+$m_upload_acl_file = "Upload File";
+$m_acl_upload = "Upload";
+$a_format_error_file ="File extension error! It must be \\\".acl\\\" . Please try again!";
+$a_blank_acl_file = "Empty file is not accepted!";
+$m_download_acl_title = "Download ACL File";
+$m_save_acl = "Load ACL File to Local Hard Driver";
+$m_save = "Download";
+
+?>

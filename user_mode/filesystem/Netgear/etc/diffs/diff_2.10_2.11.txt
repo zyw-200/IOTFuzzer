@@ -1,0 +1,2 @@
+system:basicSettings:eventStatusWordId0 FFF8F800
+system:basicSettings:eventStatusWordId1 0000403F

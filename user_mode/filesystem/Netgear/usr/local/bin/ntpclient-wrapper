@@ -1,0 +1,34 @@
+#!/bin/sh
+
+DEFAULT_SERVER=$1
+DEFAULT_PORT=$2
+NTP_SERVER_1="pool.ntp.org"
+NTP_SERVER_2="time.nist.gov"
+
+# Function will check the give server and exit the program
+# if it could successfully reach the server
+check_ntp()
+{
+	/usr/local/bin/ntpclient -s -h $1 -p $2 -t > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		/bin/echo "1" > /tmp/testNTP
+		/usr/local/bin/sc_radio < /var/config
+		exit 0
+	else
+		logger "Unable to update NTP time from '$1' server."
+		/bin/echo "0" > /tmp/testNTP
+		return 1
+	fi
+}
+
+
+while true
+do
+	/bin/sleep 30
+	# Check the default which we got from command line
+	check_ntp $DEFAULT_SERVER $DEFAULT_PORT
+	# Fallback Servers
+	check_ntp $NTP_SERVER_1 $DEFAULT_PORT
+	check_ntp $NTP_SERVER_2 $DEFAULT_PORT
+done
+

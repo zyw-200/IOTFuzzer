@@ -1,0 +1,70 @@
+#!/bin/sh
+usage="Usage wan [-g|-s] [xml node] {value}"
+echo "[$0] $1 $2 ..." > /dev/console
+case "$1" in
+"-g")
+	case "$2" in
+	"inf#")
+		echo "1"
+		;;
+	"inf:1/connecttype")
+		;;
+	"inf:1/connectstatus")
+		/etc/scripts/status/wan.sh status
+		;;
+	"inf:1/ip")
+		/etc/scripts/status/wan.sh ip
+		;;
+	"inf:1/netmask")
+		/etc/scripts/status/wan.sh mask
+		;;
+	"inf:1/gateway")
+		/etc/scripts/status/wan.sh defaultgw
+		;;
+	"inf:1/primarydns")
+		scut -p nameserver /etc/resolv.conf | pfile -l1
+		;;
+	"inf:1/secondarydns")
+		scut -p nameserver /etc/resolv.conf | pfile -l2
+		;;
+	"inf:1/linktype")
+		switch -g wan_port
+		;;
+	"inf:1/mac")
+		/etc/scripts/status/wan.sh hwaddr
+		;;
+	"inf:1/discover")
+		IF=`scut -p WANIF= $layout_config`
+		RES=`pppd pty_pppoe pppoe_discovery pppoe_device $IF`
+		[ "$RES" = "yes" ] && echo 1 && exit 0
+		RES=`udhcpc -i $IF -d`
+		[ "$RES" = "yes" ] && echo 2 && exit 0
+		echo 0
+		exit 0
+		;;
+	esac
+	;;
+"-s")
+	case "$2" in
+	"inf:1/connect")
+		/etc/scripts/misc/wan.sh restart
+		sleep 5
+		;;
+	"inf:1/disconnect")
+		/etc/scripts/misc/wan.sh stop
+		;;
+	"inf:1/discover")
+		IF=`scut -p WANIF= $layout_config`
+		RES=`pppd pty_pppoe pppoe_discovery pppoe_device $IF`
+		[ "$RES" = "yes" ] && rgdb -i -s /runtime/wan/inf:1/discover 1 && exit 0
+		RES=`udhcpc -i $IF -d`
+		[ "$RES" = "yes" ] && rgdb -i -s /runtime/wan/inf:1/discover 2 && exit 0
+		rgdb -i -s /runtime/wan/inf:1/discover 0
+		exit 0
+		;;
+	esac
+	;;
+*)
+	echo $usage
+	;;
+esac

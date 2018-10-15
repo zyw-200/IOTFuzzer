@@ -1,0 +1,7 @@
+#!/bin/sh
+
+RET="discoverRet=$1"
+app_sync 1047 0 $RET
+
+exit 0
+

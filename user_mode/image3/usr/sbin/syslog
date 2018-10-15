@@ -1,0 +1,214 @@
+#!/bin/sh
+usage="Usage: syslog [-g|-s] [xml node] {value}"
+case "$1" in
+-g)
+	if [ "$2" = "entry#" ]; then
+		pfile -c -f /var/log/messages
+	else
+		enty=`echo $2 | cut -d/ -f1`
+		node=`echo $2 | cut -d/ -f2`
+		en=`echo $enty | cut -d: -f1`
+		id=`echo $enty | cut -d: -f2`
+		if [ "$en" = "entry" ]; then
+			case "$node" in
+			datetime)
+				pfile -f /var/log/messages -l$id | scut -f1 -n3
+				;;
+			message)
+				pfile -f /var/log/messages -l$id | scut -p '|' -n1000
+				;;
+			esac
+		fi
+	fi
+	;;
+-s)
+	log_path="/var/log/messages"
+	tlog_path="/var/log/tlogsmsg"
+	smtp_msg_path="/var/log/smtp_message.txt"
+	case "$2" in
+	tlogs)
+		tlogs -l $log_path > $tlog_path
+		;;
+	clear)
+		date_time=`date | scut -f2 -n3`
+		rm $log_path -r
+		touch $log_path
+		#echo "$date_time  |  SYS:038" > $log_path
+		tlogs -l $log_path > $tlog_path
+		;;
+	sendmail)
+		mail_server=`rgdb -g /sys/log/mailserver`
+		email_addr=`rgdb -g /sys/log/email`
+		mail_subject="Log Message."
+		mail_port="25"
+		src_host=`rgdb -g /sys/hostName`
+		from=`rgdb -g /sys/log/email`
+		reply=`rgdb -g /sys/log/email`
+
+		tlogs -l $log_path > $tlog_path
+		/usr/sbin/smtpclient -v -s "$mail_subject" -f "$from" -r "$reply" -H "$src_host" -S "$mail_server" -P "$mail_port" "$email_addr" < $tlog_path > $smtp_msg_path
+		logger -p 192.1 "SYS:004[$email_addr]"
+		;;
+	emailinternal)	
+		mail_index=`/sys/log/smtpindex`
+		mail_server=`rgdb -g /sys/log/smtp/index:"$mail_index"/mailserver`
+		email_addr=`rgdb -g /sys/log/smtp/index:"$mail_index"/fromemail`
+		mail_subject="Log Message."
+		mail_port=`mailport`
+		src_host=`rgdb -g /sys/hostName`
+		from=`rgdb -g rgdb -g /sys/log/smtp/index:"$mail_index"/fromemail`
+		username=`rgdb -g /sys/log/smtp/index:"$mail_index"/username`
+		password=`rgdb -g /sys/log/smtp/index:"$mail_index"/pass1`
+		
+		cp "$tlog_path" "$smtp_msg_path"
+		
+		tlogs -l $log_path > $tlog_path
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" = "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" = "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$src_host" -s "$mail_subject" -r "$mail_server" -z "$tlog_path" -p "$mail_port" -tls -m login -u "$username" -i "$password" "$email_addr"
+			fi			
+		fi
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" = "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" != "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$src_host" -s "$mail_subject" -r "$mail_server" -z "$tlog_path" -p "$mail_port" -m login -u "$username" -i "$password" "$email_addr"
+			fi			
+		fi
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" != "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" = "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$src_host" -s "$mail_subject" -r "$mail_server" -z "$tlog_path" -p "$mail_port" -tls "$email_addr"
+			fi			
+		fi
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" != "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" != "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$src_host" -s "$mail_subject" -r "$mail_server" -z "$tlog_path" -p "$mail_port" "$email_addr"
+			fi			
+		fi
+	
+		logger -p 192.1 "SYS:004[$email_addr]"
+		;;
+	auth_sendmail)
+		mail_server=`rgdb -g /sys/log/mailserver`
+		email_addr=`rgdb -g /sys/log/email`
+		mail_subject=`rgdb -g /sys/log/subject`
+		username=`rgdb -g /sys/log/username`
+		password=`rgdb -g /sys/log/pass1`
+		from=`rgdb -g /sys/log/sender`
+
+		if [ "$mail_server" != "" -a "$email_addr" != "" ]; then
+			tlogs -l $log_path > $tlog_path
+			if [ "$username" != "" ]; then
+				/usr/sbin/sendmail -s "$mail_subject" -S "$mail_server" -a "$from"  -t "$email_addr" -u "$username" -p "$password" -f "$tlog_path"
+			else
+				/usr/sbin/sendmail -s "$mail_subject" -S "$mail_server" -a "$from"  -t "$email_addr" -f "$tlog_path"
+			fi
+			logger -p 192.1 "SYS:004[$email_addr]"
+		fi
+		;;
+	emailauth)	
+		mail_index=`/sys/log/smtpindex`
+		mail_server=`rgdb -g /sys/log/smtp/index:"$mail_index"/mailserver`
+		email_addr=`rgdb -g /sys/log/smtp/index:"$mail_index"/toemail`
+		mail_subject=`rgdb -g /sys/log/subject`
+		mail_port=`rgdb -g /sys/log/smtp/index:"$mail_index"/mailport`
+		from=`rgdb -g /sys/log/smtp/index:"$mail_index"/fromemail`
+		username=`rgdb -g /sys/log/smtp/index:"$mail_index"/username`
+		password=`rgdb -g /sys/log/smtp/index:"$mail_index"/pass1`
+		tlogs -l $log_path > $tlog_path
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" = "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" = "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$username" -s "$mail_subject" -r "$mail_server" -z "$tlog_path" -p "$mail_port" -tls -m login -u "$username" -i "$password" "$email_addr"
+			fi			
+		fi
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" = "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" != "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$username" -s "$mail_subject" -r "$mail_server" -z "$tlog_path" -p "$mail_port" -m login -u "$username" -i "$password" "$email_addr"
+			fi			
+		fi
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" != "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" = "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$username" -s "$mail_subject" -r "$mail_server" -z "$tlog_path" -p "$mail_port" -tls "$email_addr"
+			fi			
+		fi
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" != "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" != "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$username" -s "$mail_subject" -r "$mail_server" -z "$tlog_path" -p "$mail_port" "$email_addr"
+			fi			
+		fi	
+		logger -p 192.1 "SYS:004[$email_addr]"
+		;;
+
+	auth_esmtp)
+		mail_server=`rgdb -g /sys/log/mailserver`
+		fromemail_addr=`rgdb -g /sys/log/fromemail`
+		toemail_addr=`rgdb -g /sys/log/toemail`
+		username=`rgdb -g /sys/log/username`
+		password=`rgdb -g /sys/log/pass1`
+		mailport=`rgdb -g /sys/log/mailport`
+		mail_subject="Log Message."
+
+		if [ "$mailport" = "" ]; then
+		mailport="25"
+		fi
+
+		if [ "$3" = "auth" ]; then
+			esmtp_path="/var/log/smtpmsg"
+		else
+			esmtp_path="/var/log/tmpmsg"
+		fi
+
+		if [ "$mail_server" != "" -a "$toemail_addr" != "" ]; then
+			if [ "$username" = "0" ]; then
+				/usr/sbin/sendmail -s "$mail_subject" -S "$mail_server" -a "$fromemail_addr"  -t "$toemail_addr" -f "$esmtp_path" -P "$mailport"
+				
+			else
+				/usr/sbin/sendmail -s "$mail_subject" -S "$mail_server" -a "$fromemail_addr"  -t "$toemail_addr" -u "$username" -p "$password" -f "$esmtp_path" -P "$mailport"
+			fi
+		fi
+		;;
+	email_esmtp)	
+		mail_index=`rgdb -g /sys/log/smtpindex`
+		mail_server=`rgdb -g /sys/log/smtp/index:"$mail_index"/mailserver`
+		email_addr=`rgdb -g /sys/log/smtp/index:"$mail_index"/toemail`
+		mail_subject="Log Message."
+		mail_port=`rgdb -g /sys/log/smtp/index:"$mail_index"/mailport`
+		from=`rgdb -g /sys/log/smtp/index:"$mail_index"/fromemail`
+		username=`rgdb -g /sys/log/smtp/index:"$mail_index"/username`
+		password=`rgdb -g /sys/log/smtp/index:"$mail_index"/pass1`
+		if [ "$3" = "auth" ]; then
+			esmtp_path="/var/log/smtpmsg"
+		else
+			esmtp_path="/var/log/tmpmsg"
+		fi
+		
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" = "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" = "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$username" -s "$mail_subject" -r "$mail_server" -z "$esmtp_path" -p "$mail_port" -tls -m login -u "$username" -i "$password" "$email_addr"
+			fi			
+		fi
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" = "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" != "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$username" -s "$mail_subject" -r "$mail_server" -z "$esmtp_path" -p "$mail_port" -m login -u "$username" -i "$password" "$email_addr"
+			fi			
+		fi
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" != "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" = "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$username" -s "$mail_subject" -r "$mail_server" -z "$esmtp_path" -p "$mail_port" -tls "$email_addr"
+			fi			
+		fi
+		if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/authtype`" != "1" ]; then
+			if [ "`rgdb -g /sys/log/smtp/index:"$mail_index"/ssl`" != "1" ]; then
+				/usr/sbin/email -V -f "$from" -n "$username" -s "$mail_subject" -r "$mail_server" -z "$esmtp_path" -p "$mail_port" "$email_addr"
+			fi			
+		fi
+	
+		;;
+		
+	*)
+		echo $usage
+		;;
+	esac
+	;;
+*)
+	echo $usage
+	;;
+esac

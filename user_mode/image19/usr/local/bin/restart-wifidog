@@ -1,0 +1,8 @@
+IP=`ifconfig brvlan1 | grep "inet addr" | cut -d ':' -f 2| cut -d ' ' -f 1`
+iptables -t nat -F WiFiDog_Outgoing
+iptables -t nat -A WiFiDog_Outgoing -j WiFiDog_Unknown
+iptables -t nat -I WiFiDog_Outgoing 1 -d ${IP} -j ACCEPT
+iptables -t nat -I WiFiDog_Outgoing 1 -s ${IP} -j ACCEPT
+
+/bin/busybox sleep 2
+echo 1 > /proc/sys/net/bridge/bridge-http-redirect-reset-mac-entry

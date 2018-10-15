@@ -1,0 +1,42 @@
+#!/bin/ash
+
+tree()
+{
+	local files
+	local item
+	local tab
+	local i
+	tab=$(($1+1))
+	cd $2
+	files=$(ls)
+	for item in $files; do
+			i=1
+			while [ $i -lt $(($tab-1)) ]; do
+				echo -n "|   "
+				i=$(($i+1))
+			done
+			if [ -d $item ]; then
+				echo -n "|---"
+				echo "$item>   "
+				tree $tab $item
+				cd ..		
+			else 
+				if ! [ "$tab" = "1" ]; then
+					echo -n "|---"
+				else
+					echo -n "----"
+				fi
+				echo "$item"
+			fi
+	done
+	i=1
+	while [ $i -lt $(($tab-2)) ]; do
+		echo -n "|   "
+		i=$(($i+1))
+	done
+	echo "|   "
+}
+
+#echo "hi"
+tree 1 $(pwd)  | more 
+		

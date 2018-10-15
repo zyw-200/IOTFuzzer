@@ -1,0 +1,9 @@
+#!/bin/sh
+#ACTION might be update or release
+#IFACE=$1
+ACTION=$1
+SEC=$2
+USEC=$3
+#REASON=$3
+
+app_sync 1035 0 "act=$ACTION" "sec=$SEC" "usec=$USEC"

@@ -1,0 +1,20 @@
+#!/bin/sh
+echo [$0]: linkname[$1] message[$2] session[$3] mtu[$4] ... > /dev/console
+TROOT=`rgdb -i -g /runtime/template_root`
+[ "$TROOT" = "" ] && TROOT="/etc/templates"
+
+WANIF="/runtime/wan/inf:1"
+if [ "$2" = "connected" ]; then
+	rgdb -i -s $WANIF/sessionid "$3"
+	rgdb -i -s $WANIF/mtu "$4"
+fi
+if [ "$2" = "on demand" ]; then
+	IF=`pfile -l2 -f /var/run/ppp-$1.pid`
+	echo "On Demand $1 $IF" > /dev/console
+	rgdb -i -s $WANIF/connectstatus ondemand
+	rgdb -i -s $WANIF/interface "$IF"
+
+	rgdb -A $TROOT/ppp/session_up.php -V session=$1 -V OnDemand=1 > /var/run/session_up.sh
+	sh /var/run/session_up.sh $1 $IF > /dev/console
+fi
+echo "[$0]: $1 (done) ..." > /dev/console

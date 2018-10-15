@@ -1,0 +1,155 @@
+#!/bin/sh
+
+ifconfig lo 127.0.0.1
+
+CINIT=1
+
+#hostname rlx-linux
+
+mount -t proc proc /proc
+mount -t ramfs ramfs /var
+mount -t jffs2 /dev/mtdblock2 /flash
+#mount -t jffs2 /dev/mtdblock3 /mydlink
+if [ -e /dev/mtdblock6  ]; then
+mount -t jffs2 /dev/mtdblock6 /pdata
+fi
+mount -t sysfs sysfs /sys
+mount -t ramfs ramfs /media
+mount -t usbfs usbfs /proc/bus/usb
+
+mkdir /var/tmp
+mkdir /var/web
+mkdir /var/log
+mkdir /var/run
+mkdir /var/lock
+mkdir /var/system
+mkdir /var/dnrd
+mkdir /var/lib
+mkdir /var/lib/misc
+mkdir -p /var/spool/cron/crontabs
+mkdir -p /flash/mydlink
+#resetd
+resetd &
+
+#passwd
+cp /etc/tmp/passwd /var/tmp/passwd 2>/dev/null
+
+##For miniigd
+mkdir /var/linuxigd
+cp /etc/tmp/pics* /var/linuxigd 2>/dev/null
+
+##For pptp
+mkdir /var/ppp
+mkdir /var/ppp/peers
+
+#smbd
+mkdir /var/config
+mkdir /var/private
+mkdir /var/tmp/usb
+touch /var/tmp/smbpasswd
+
+#snmpd
+mkdir /var/net-snmp
+
+#cp /bin/pppoe.sh /var/ppp/true
+#echo "#!/bin/sh" > /var/ppp/true
+#echo "PASS"     >> /var/ppp/true
+
+#for console login
+#cp /etc/shadow.sample /var/shadow
+
+#extact web pages
+#cd /web
+#flash extr /web
+#cd /
+ 
+#mkdir -p /var/udhcpc
+#mkdir -p /var/udhcpd
+#cp /bin/init.sh /var/udhcpc/eth0.deconfig
+#echo " " > /var/udhcpc/eth0.deconfig
+#cp /bin/init.sh /var/udhcpc/eth1.deconfig
+#echo " " > /var/udhcpc/eth1.deconfig
+#cp /bin/init.sh /var/udhcpc/br0.deconfig
+#echo " " > /var/udhcpc/br0.deconfig
+#cp /bin/init.sh /var/udhcpc/wlan0.deconfig
+#echo " " > /var/udhcpc/wlan0.deconfig
+
+#if [ "$CINIT" = 1 ]; then
+#startup.sh
+#fi
+
+# for wapi certs related
+#mkdir /var/myca
+# wapi cert(must done before init.sh)
+#cp -rf /usr/local/ssl/* /var/myca/ 2>/dev/null
+# loadWapiFiles >/dev/null 2>&1
+ 
+# for wireless client mode 802.1x
+mkdir /var/1x
+cp -rf /usr/1x/* /var/1x/ 2>/dev/null
+ 
+# Start system script
+#init.sh gw all
+
+# for fix ESD issue.
+ew 0xb8021054 0x186a0
+ew 0xb8021054 0x100000
+ 
+# modify dst-cache setting
+echo "16384" > /proc/sys/net/ipv4/route/max_size
+echo "180" > /proc/sys/net/ipv4/route/gc_thresh
+echo 20 > /proc/sys/net/ipv4/route/gc_elasticity
+# echo 35 > /proc/sys/net/ipv4/route/gc_interval
+echo 60 > /proc/sys/net/ipv4/route/secret_interval
+# echo 10 > /proc/sys/net/ipv4/route/gc_timeout
+ 
+# echo "4096" > /proc/sys/net/nf_conntrack_max
+echo "16384" > /proc/sys/net/netfilter/nf_conntrack_max
+echo "600" > /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_established
+echo "20" > /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_time_wait
+echo "20" > /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_close
+echo "90" > /proc/sys/net/ipv4/netfilter/ip_conntrack_udp_timeout
+echo "120" > /proc/sys/net/ipv4/netfilter/ip_conntrack_udp_timeout_stream
+echo "90" > /proc/sys/net/ipv4/netfilter/ip_conntrack_generic_timeout
+echo "1048576" > /proc/sys/net/ipv4/rt_cache_rebuild_count
+echo "32" > /proc/sys/net/netfilter/nf_conntrack_expect_max
+echo "20" > /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_syn_sent
+echo "10" > /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_syn_recv
+
+#echo 1 > /proc/sys/net/ipv4/ip_forward #don't enable ip_forward before set MASQUERADE
+#echo 2048 > /proc/sys/net/core/hot_list_length
+
+# start web server
+#boa
+
+mnt=`df | grep flash | awk '{printf $6}'`
+if [ "$mnt" == "/flash" ]
+then
+        echo "mount flash ok"
+else
+        echo "mount flash fail ..."
+        mtd_write erase /dev/mtd2 -r
+fi
+
+if [ -e /dev/mtdblock6  ]; then
+mnt2=`df | grep pdata | awk '{printf $6}'`
+if [ "$mnt2" == "/pdata" ]
+then
+        echo "mount pdata ok"
+	if [ ! -e /padta/move_done ]; then
+	cp -af /sgcc/* /pdata
+	echo 1 > /pdata/move_done
+	fi
+else
+        echo "mount pdata fail ..."
+        mtd_write erase /dev/mtd6 -r
+fi
+fi
+
+if [ ! -e /flash/no_ncc  ]; then
+ncc2 &
+fi
+
+#open pppoe passthru
+#echo "2" > /proc/custom_Passthru
+

@@ -1,0 +1,14 @@
+HTTP/1.1 200 OK
+Content-Type: text/xml
+
+<?
+/* Created by Kwest Wan 20071009 
+*  to support D-Link Widget 
+*/
+
+$section = $_GET["section"];
+//require("/www/widget/xml_head.xml");
+dophp("load", "/htdocs/widget/".$section.".xml");
+//require("/www/widget/xml_tail.xml");
+
+?>

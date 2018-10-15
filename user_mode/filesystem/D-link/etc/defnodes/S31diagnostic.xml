@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<wrgnd08_dlob_dir815>
+	<runtime>
+		<diagnostic>
+			<ping set="/etc/scripts/ping.sh set" get="/etc/scripts/ping.sh get"></ping>
+		</diagnostic>
+	</runtime>
+</wrgnd08_dlob_dir815>

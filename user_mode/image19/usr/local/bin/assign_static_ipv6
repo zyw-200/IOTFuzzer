@@ -1,0 +1,24 @@
+INTERFACE=$1
+IP=$2
+IPLOCAL=$3
+GATEWAY=$4
+NULL=::0
+
+OLD_IP=`ifconfig $INTERFACE | grep "inet6 addr" | awk '{printf $3}'`
+echo " Setting the Local and Global Ipv6Address "
+if [ $INTERFACE ]; then
+	if [ $IP ]; then
+		ip -6 addr flush dev $INTERFACE scope global
+		ip -6 addr add $IP dev $INTERFACE
+	fi
+	if [ $IPLOCAL != $NULL ]; then
+		ip -6 addr flush dev $INTERFACE scope link
+		ip -6 addr add $IPLOCAL dev $INTERFACE
+	fi
+fi
+
+if [ $GATEWAY ]; then
+        ip -6 ro del default
+        ip -6 ro add default via $GATEWAY dev $INTERFACE
+fi
+

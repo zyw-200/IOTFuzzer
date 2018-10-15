@@ -1,0 +1,26 @@
+language: cpp
+matrix:
+  include:
+  - compiler: clang
+    os: linux
+    dist: trusty
+    sudo: required
+    group: edge
+  - compiler: gcc
+    os: linux
+    dist: trusty
+    sudo: required
+    group: edge
+  - compiler: clang
+    os: osx
+  - compiler: gcc
+    os: osx
+
+install:
+  - ./install-sleuthkit.sh
+
+script:
+  - make check
+  - if test ${TRAVIS_OS_NAME} = "linux"; then cd release; ./release-unix.pl ci; fi
+
+# NOTE: OS X doesn't have ant, so CI fails

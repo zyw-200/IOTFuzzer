@@ -1,0 +1,83 @@
+
+<HTML>
+<HEAD>
+   <META http-equiv="Pragma" content="no-cache">
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <TITLE>IP Settings Help</TITLE>
+   <LINK REL=stylesheet HREF="../include/css/default.css" TYPE="text/css">
+</HEAD>
+
+<BODY class = "helppageattributes">
+ 
+
+<h1 align=center style='text-align:center'>IP Settings Help</h1>
+
+
+<hr size=4 width="80%" align=center>
+
+<h2><a name="iPSettings"></a>IP Settings</h2>
+
+<P>
+		This page lets you to configure your Access Point as a client of a
+        Dynamic Host Configuration Protocol (DHCP) server. It has the
+        following options:</P>
+<ul type=disc>
+ <ul type=circle>
+  <li><b>DHCP Client:</b> Enable this option if you want the Access
+                		  Point to get its IP address and other network settings from a DHCP
+                		  server on your LAN. By default, the DHCP client option is disabled.
+                		  If you enable it, the IP address, subnet mask, default gateway,
+                		  primary DNS, and Secondary DNS settings fields are disabled, because
+                		  the Access Point automatically gets them from the DHCP server on
+                		  your network. <BR>If you enable this option, you can also access the
+                		  Access Point's administrative screen by entering the Access Point
+                		  name in the URL field of the browser.</li> 
+  <li><b>IP Address:</b>  This is the IP address of the Access
+                		  Point. The default IP address is 192.168.0.237. To change it, enter
+                		  an unused IP address from the address range used on your LAN.  </li>
+  <li><b>Subnet Mask:</b> Enter the subnet mask value used on
+                          your LAN. The default value is 255.255.255.0.</li>
+  <li><b>Default Gateway:</b> Enter the IP address of the gateway
+                		      for your LAN.</li>
+  <li><b>Primary DNS Server:</b> Enter the IP address of the
+                				 Primary Domain Name Server (DNS) that you want to use.</li>
+  <li><b>Secondary DNS Server:</b> Enter the IP address of the
+                				   Secondary Domain Name Server (DNS) that you want to use. </li>
+  <li><b>Network Integrity Check: </b>Check this box to enable the WNAP320 to validate that the upstream link is active before allowing wireless
+associations. If you set this option you must ensure your default gateway is configured.</li>
+  </ul>
+</ul>
+<h3><a name="802_1QVLAN"></a>802.1Q VLAN</h3>
+<P>The 802.1Q VLAN protocol on the Access Point logically separates
+            traffic on the same physical network.</P>
+<ul type=disc>
+ <ul type=circle>
+<li><P><B>Untagged VLAN</B></P>
+<P>When checked, this option allows one VLAN to be configured as an
+            &quot;untagged VLAN&quot;. When the Access Point sends frames
+            associated with the untagged VLAN out the LAN (Ethernet) interface,
+            those frames will be untagged. When the Access Point receives
+            untagged traffic from the LAN (Ethernet) interface, those frames are
+            assigned to the untagged VLAN.</P>
+            <P>If unchecked, the Access Point tags all outgoing LAN (Ethernet)
+            frames, and only accepts incoming frames that are tagged with known
+            VLAN IDs.</P>
+            <P><B>Note: </B>The Untagged VLAN checkbox should only be unchecked
+            if the hubs or switches on your LAN support the VLAN (802.1Q)
+            standard. Likewise, the Untagged VLAN value should only be changed if
+            the hubs/switches on your LAN support the VLAN (802.1Q) standard.
+            Changing either of these values will result in a loss of IP
+            connectivity if the hubs/switches on your network have not yet been
+            configured with the corresponding VLANs.</P></li>
+            <li><P><B>Management VLAN</B></P>
+            <P>Management VLANs are used for managing traffic (Telnet, SNMP, and
+            HTTP) to and from the Access Point.</P>
+            <P>Frames belonging to the Management VLAN are not given any 802.1Q
+            header when sent over the trunk. If a port is in a single VLAN, it
+            can be untagged. But if the port needs to be a member of multiple
+            VLANs, it must be tagged.</P></li>                    
+  </ul>
+</ul>
+</body>
+
+</html>

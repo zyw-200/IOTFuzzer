@@ -1,0 +1,49 @@
+#!/bin/sh
+usage="Usage: diagnostic [-g|-s] [xml node] {value}"
+rfile="/var/run/ping.result"
+lip=`/etc/scripts/status/lan.sh ip`
+wip=`/etc/scripts/status/wan.sh ip`
+case "$1" in
+-g)
+	case "$2" in
+	pingresult)
+		if [ -f $rfile ]; then
+			r=`grep "is alive" $rfile`
+			rm -f $rfile
+			if [ "$r" != "" ]; then
+				echo "2"
+			else
+				echo "1"
+			fi
+		fi
+		exit 0
+		;;
+	*)
+		echo $usage;;
+	esac
+	;;
+-s)
+	case "$2" in
+	pingip)
+		echo -n > $rfile
+		rgdb -i -s /runtime/diagnostic/pingResult 2
+		if [ "$3" = "$lip" -o "$3" = "$wip" -o "$3" = "127.0.0.1" ]; then
+			echo "$3 is alive!" > $rfile
+		elif [ "$3" != "" ]; then
+			ping $3 > $rfile
+			r=`grep "is alive" $rfile`
+			if [ "$r" = "" ]; then
+				rgdb -i -s /runtime/diagnostic/pingResult 1
+			fi
+		fi
+		;;
+	*)
+		echo $usage
+		;;
+	esac
+	;;
+*)
+	echo $usage
+	;;
+esac
+exit 0

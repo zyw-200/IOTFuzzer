@@ -1,0 +1,1 @@
+system:wlanSettings:wlanSettingTable:wlan0:rogueApDetectionPolicy 10

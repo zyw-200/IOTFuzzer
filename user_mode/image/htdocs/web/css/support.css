@@ -1,0 +1,74 @@
+dt
+{
+	font-weight: bold;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	margin-left: 15px;
+}
+dd
+{
+	margin-top: 5px;
+	margin-bottom: 5px;
+	margin-left: 15px;
+	margin-right: 15px;
+}
+dd p
+{
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+dd dl
+{
+	margin-left: 15px;
+}
+
+.help_example dl
+{
+	background-color: #DFDFDF;
+	padding: 0 0 0 4px;
+	border: gray;
+	border-width: 1px;
+	border-style: solid;
+	margin-left:15px;
+	margin-right:15px;
+}
+.help_example  dt
+{
+	margin-left:0px;
+}
+.help_example dd
+{
+	margin-left:0px;
+}
+dd .help_example dl
+{
+	margin-left: 0;
+}
+.help_example dl dl
+{
+	border: 0;
+	margin-right:15px;
+}
+
+.box_alert
+{
+	color: #CC0000;
+	background-color: transparent;
+	font-weight: bold;
+}
+code
+{
+	font-family: "Letter Gothic MT", "Lucida Console", "Courier New", Courier, monospace;
+	font-weight: bold;
+}
+span.button_ref
+{
+	color: #111111;
+	background-color: #99CCEE;
+	font-size: 9px;
+	font-weight: bold;
+	white-space: nowrap;
+	line-height: 12px;
+	margin: 0 2px;
+	padding: 0px 4px;
+}

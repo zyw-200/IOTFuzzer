@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<wrgnd08_dlob_dir815>
+	<runtime>
+		<device>
+			<wlandriver>A band: RT3883 v2.4.1.2_beta , G band: RT3090 v2.4.0.1</wlandriver>
+			<modelname>DIR-815</modelname>
+			<producturl>http://www.dlink.com.tw</producturl>
+			<description>Wireless Broadband Router</description>
+		</device>
+	</runtime>
+</wrgnd08_dlob_dir815>

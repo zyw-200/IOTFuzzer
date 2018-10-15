@@ -1,0 +1,299 @@
+#!/bin/sh
+echo [$0] $1 ... > /dev/console
+TROOT=`rgdb -i -g /runtime/template_root`
+[ "$TROOT" = "" ] && TROOT="/etc/templates"
+case "$1" in
+COMMIT)
+	/etc/scripts/misc/profile.sh put >  /dev/console
+	;;
+WAN)
+	$TROOT/wan.sh restart > /dev/console &
+	;;
+LAN)
+	$TROOT/lan.sh restart > /dev/console
+	;;
+IPV6)
+	/usr/sbin/inet active > /dev/console
+	;;
+CLR_DEVSTATUS)
+        /etc/scripts/misc/nclr-devstatus.sh 20 &
+        ;;
+DELAY_LAN)
+	$TROOT/lan.sh delay_restart > /dev/console &
+	;;	        
+LAN_ON_LAN_CHANGE)
+	rgdb -A /www/onlanchange.php > /var/run/lanchange.sh
+	sh /var/run/lanchange.sh > /dev/console
+	;;
+LAN_CHANGE)
+	sh /etc/templates/onlanchange.sh > /dev/console
+	;;	
+HTTPD)
+	$TROOT/webs.sh restart > /dev/console
+	;;
+HTTPD_PASSWD)
+	$TROOT/webs.sh password > /dev/console
+	logger -p 192.0 "Password changed"
+	;;
+STUNNEL)
+	$TROOT/stunnel.sh restart > /dev/console
+	;;
+DHCPD)
+	$TROOT/dhcpd.sh > /dev/console
+	;;
+DHCPD_RESTART)
+	sh /var/run/dhcpd_restart.sh > /dev/console
+	;;	
+DHCP_COMPARE)
+	$TROOT/dhcp_compare.sh > /dev/console
+	;;	
+DNSR)
+	$TROOT/dnrd.sh restart > /dev/console &
+	;;
+TIME)
+	$TROOT/timezone.sh
+	$TROOT/ntp.sh start > /dev/console
+	;;
+SCAN_G)
+	$TROOT/ap_scan.sh g > /dev/console	
+	;;
+SCAN_A)
+	$TROOT/ap_scan.sh a > /dev/console	
+	;;
+ROGUEAP_SCAN_G)
+        $TROOT/rogue_ap_scan.sh g > /dev/console
+        ;;
+ROGUEAP_SCAN_A)
+        $TROOT/rogue_ap_scan.sh a > /dev/console
+        ;;
+AP_SITESURVEY_A)
+        $TROOT/wlan_site.sh restart a > /dev/console
+        ;;
+AP_SITESURVEY_G)
+        $TROOT/wlan_site.sh restart g> /dev/console
+        ;;
+WDS_SCAN_G)
+	sh $TROOT/wds_scan.sh g> /dev/console	
+	;;	
+WDS_SCAN_A)
+	sh $TROOT/wds_scan.sh a> /dev/console	
+	;;	
+MAC_SCAN)
+	sh $TROOT/mac_scan.sh > /dev/console
+	;;
+WLAN)
+	$TROOT/wlan.sh restart 2> /dev/console	
+	;;	
+WEBREDIRECT)
+        $TROOT/webredirect.sh restart > /dev/console
+	;;
+CAPTIVAL_PORTAL)
+	rgdb -A $TROOT/captival_portal.php -V generate_start=0 > /var/run/captival_portal_stop.sh
+	sh /var/run/captival_portal_stop.sh > /dev/console
+	rgdb -A $TROOT/captival_portal.php -V generate_start=1 > /var/run/captival_portal_start.sh
+	sh /var/run/captival_portal_start.sh > /dev/console
+	;;
+CAPTIVAL_PORTAL_TAR)
+	sh $TROOT/captival_tar.sh $2 $3 > /dev/console
+	;;	
+WLAN_ACL)
+	rgdb -A $TROOT/__wlan_acl.php > /var/run/wlan_acl.sh
+	sh /var/run/wlan_acl.sh > /dev/console
+	;;
+SLEEP)
+	sleep $2	> /dev/console	
+	;;
+VLAN)
+	rgdb -A $TROOT/__vlan.php -V generate_start=1 > /var/run/vlan_start.sh  # jack add multi_ssid 09/03/07
+	rgdb -A $TROOT/__vlan.php -V generate_start=0 > /var/run/vlan_stop.sh   # jack add multi_ssid 09/03/07
+	sh /var/run/vlan_stop.sh > /dev/console	
+	sh /var/run/vlan_start.sh > /dev/console
+        #start vlan for eth0 port
+        rgdb -A /etc/scripts/eth0_vlan.php -V generate_start=1 > /var/run/eth0_vlan_start.sh
+        rgdb -A /etc/scripts/eth0_vlan.php -V generate_start=0 > /var/run/eth0_vlan_stop.sh
+        sh /var/run/eth0_vlan_stop.sh
+        sh /var/run/eth0_vlan_start.sh
+	;;	
+VLAN_PORT_LIST)
+	/usr/sbin/genVLANTableByPort > /dev/console	
+	;;		
+WLAN_G)
+	$TROOT/wlan.sh restart g > /dev/console	
+	;;
+WLAN_A)
+	$TROOT/wlan.sh restart a > /dev/console
+	;;
+QOS)
+	rgdb -A $TROOT/qos_run.php -V generate_start=0 > /var/run/qos_stop.sh
+	sh /var/run/qos_stop.sh > /dev/console
+	rgdb -A $TROOT/qos_run.php -V generate_start=1 > /var/run/qos_start.sh
+	sh /var/run/qos_start.sh > /dev/console
+	;;
+TRAFFICMGR)
+	rgdb -A $TROOT/trafficmgr_run.php -V generate_start=0 > /var/run/trafficmgr_stop.sh
+	sh /var/run/trafficmgr_stop.sh > /dev/console
+	rgdb -A $TROOT/trafficmgr_run.php -V generate_start=1 > /var/run/trafficmgr_start.sh
+	sh /var/run/trafficmgr_start.sh > /dev/console
+	;;
+QOS_TM) # restart qos and trafficmgr at the same time
+	rgdb -A $TROOT/trafficmgr_run.php -V generate_start=0 > /var/run/trafficmgr_stop.sh
+	sh /var/run/trafficmgr_stop.sh > /dev/console
+	rgdb -A $TROOT/qos_run.php -V generate_start=0 > /var/run/qos_stop.sh
+	sh /var/run/qos_stop.sh > /dev/console
+	rgdb -A $TROOT/qos_run.php -V generate_start=1 > /var/run/qos_start.sh
+	sh /var/run/qos_start.sh > /dev/console
+	rgdb -A $TROOT/trafficmgr_run.php -V generate_start=1 > /var/run/trafficmgr_start.sh
+	sh /var/run/trafficmgr_start.sh > /dev/console
+	;;
+QOS_TC_TM)	
+	rgdb -A /etc/templates/tc_monitor.php -V generate_start=0 > /var/run/tc_monitor_stop.sh
+	sh /var/run/tc_monitor_stop.sh > /dev/console
+	sleep 1
+	rgdb -A $TROOT/trafficmgr_run.php -V generate_start=0 > /var/run/trafficmgr_stop.sh
+	sh /var/run/trafficmgr_stop.sh > /dev/console	
+	rgdb -A $TROOT/qos_run.php -V generate_start=0 > /var/run/qos_stop.sh
+	sh /var/run/qos_stop.sh > /dev/console
+	sleep 2
+	rgdb -A /etc/templates/tc_monitor.php -V generate_start=1 > /var/run/tc_monitor_start.sh
+	sh /var/run/tc_monitor_start.sh > /dev/console
+	sleep 1
+	rgdb -A $TROOT/qos_run.php -V generate_start=1 > /var/run/qos_start.sh
+	sh /var/run/qos_start.sh > /dev/console
+	rgdb -A $TROOT/trafficmgr_run.php -V generate_start=1 > /var/run/trafficmgr_start.sh
+	sh /var/run/trafficmgr_start.sh > /dev/console	
+	;;
+QOS_TC_TM_STOP)
+	rgdb -A /etc/templates/tc_monitor.php -V generate_start=0 > /var/run/tc_monitor_stop.sh
+	sh /var/run/tc_monitor_stop.sh > /dev/console
+	sleep 1
+	rgdb -A $TROOT/trafficmgr_run.php -V generate_start=0 > /var/run/trafficmgr_stop.sh
+	sh /var/run/trafficmgr_stop.sh > /dev/console	
+	rgdb -A $TROOT/qos_run.php -V generate_start=0 > /var/run/qos_stop.sh
+	sh /var/run/qos_stop.sh > /dev/console
+    ;;
+CONSOLE)
+	sh $TROOT/console.sh > /dev/console	
+	;;	
+SNMP)
+	$TROOT/snmp.sh start 2 > /dev/console	
+	;;	
+SYSLOG)
+	$TROOT/logs.sh > /dev/console &
+	;;
+COMP_G)
+	$TROOT/ap_comp.sh g> /dev/console	
+	;;	
+COMP_A)
+	$TROOT/ap_comp.sh a> /dev/console	
+	;;	
+Limit)
+	sh $TROOT/limitedadmin.sh > /dev/console	
+	;;	
+WTP)
+	sh $TROOT/wtp.sh restart > /dev/console	
+	;;		
+FRESET)
+	/etc/scripts/misc/freset.sh > /dev/console &
+	;;
+REBOOT)
+	/etc/templates/wan.sh stop	> /dev/console
+	/etc/scripts/misc/nreboot.sh 3	> /dev/console &
+	;;
+RG)
+	$TROOT/rg.sh flushall	> /dev/console &
+	;;
+RG_FIREWALL)
+	$TROOT/rg.sh firewall	> /dev/console &
+	;;
+RG_IP_FILTER)
+	$TROOT/rg.sh ipfilter	> /dev/console &
+	;;
+RG_MAC_FILTER)
+	$TROOT/rg.sh macfilter	> /dev/console &
+	;;
+RG_BLOCKING)
+	$TROOT/rg.sh blocking	> /dev/console &
+	;;
+RG_VSVR)
+	$TROOT/rg.sh vrtsrv	> /dev/console &
+	;;
+RG_DMZ)
+	$TROOT/rg.sh dmz	> /dev/console &
+	;;
+RG_MISC)
+	/etc/scripts/misc/setwantype.sh	> /dev/console 
+	$TROOT/rg.sh misc		> /dev/console
+	$TROOT/rg.sh passthrough	> /dev/console
+	$TROOT/upnpd.sh restart		> /dev/console &
+	;;
+RG_APP)
+	$TROOT/rg.sh portt	> /dev/console &
+	;;
+DDNS)
+	$TROOT/dyndns.sh	> /dev/console &
+	;;
+ST_PACK_REFRESH)
+	$TROOT/ap_statistic.sh		> /dev/console &
+	;;	
+ST_ATH_STATS)
+	$TROOT/ap_athstats.sh		> /dev/console &
+	;;
+ST_LAN_RESET)		
+	sh /etc/templates/ethernet_count_reset.sh 		> /dev/console &
+	;;
+ST_LAN_REFRESH)		
+	sh /etc/templates/ethernet_count_refresh.sh	> /dev/console &
+	;;
+ST_CAPTIVAL_REFRESH)
+	captival_usockc br_display > /dev/console &
+	;;
+PINGCTL)
+	sh $TROOT/pingctl.sh		> /dev/console &
+	;;
+ARP_SPOOFING)
+	$TROOT/arpspoofing.sh restart > /dev/console &
+	;;
+SYSTEM)
+	/etc/scripts/system.sh restart &
+	;;
+CLEAR_LANG_PACK)
+	umount /www/locale/alt
+	echo "FFFFFFFFFFFFFFFF" > `cat /etc/config/langpack`
+	;;
+CLEAN_MISC_SECTOR)
+	echo "FFFF" > `rgdb -g /sys/stunnel/ext_cert/block`
+	/etc/templates/stunnel.sh restart > /dev/console &
+	;;
+AP_ARRAY)
+	sh $TROOT/neapc.sh restart		> /dev/console &
+	;;		
+APNEAPS_V2)
+	sh $TROOT/apneaps_v2.sh restart		> /dev/console &
+	;;
+AUTORF)
+	sh $TROOT/autorf.sh restart		> /dev/console &
+	;;
+LOADBALANCE)	
+	sh $TROOT/loadbalance.sh restart		> /dev/console &
+	;;		
+NEAPS)
+	sh $TROOT/neaps.sh start		> /dev/console &
+	;;	
+NETFILTER)
+	sh $TROOT/netfilter.sh > /dev/console
+	;;	
+POWERLED)
+	sh $TROOT/powerled.sh > /dev/console
+	;;	
+MULTI2UNI)
+	sh $TROOT/dhcp_mc2uc.sh > /dev/console
+	;;	
+*)
+	echo "Usage: submit {COMMIT|WAN|LAN|WLAN|HTTPD|HTTPD_PASSWD|DHCPD|DNSR|TIME|SYSLOG|FRESET|"
+	echo "               RG|RG_FIREWALL|RG_IP_FILTER|RG_MAC_FILTER|RG_VSVR|RG_DMZ|RG_MISC|"
+	echo "               RG_URL_FILTER|RG_DOMAIN_FILTER|RG_APP|DDNS|QOS|TRAFFICMGR|ARP_SPOOFING|"
+	echo "               SYSTEM|CLEAR_LANG_PACK|CLEAN_MISC_SECTOR|AP_ARRAY|AUTORF|LOADBALANCE|"
+	echo "               NEAPS|NETFILTER}"
+	;;
+esac
+exit 0

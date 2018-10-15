@@ -1,0 +1,3 @@
+echo 1 > /proc/gpio/17_out
+echo 1 > /proc/gpio/10_out
+echo 1 > /proc/gpio/23_out

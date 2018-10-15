@@ -1,0 +1,99 @@
+#!/bin/sh
+usage="Usage: stats [-g|-s] [xml node]"
+case "$1" in
+-g)
+	n1=`echo $2 | cut -d/ -f1`
+	case "$n1" in
+	lan)
+		n2=`echo $2 | scut -p $n1/`
+		if=`/etc/scripts/status/lan.sh interface`
+		ifstats -I $if -g $n2
+		;;
+	wan)
+		n2=`echo $2 | cut -d/ -f2`
+		n3=`echo $2 | scut -p $n1/$n2/`
+		if=`/etc/scripts/status/wan.sh interface`
+		ifstats -I $if -g $n3
+		;;
+	wireless)
+		n2=`echo $2 | cut -d/ -f2`
+		case "$n2" in
+		rx|tx)
+			n2=`echo $2 | scut -p $n1/`
+			if=`/etc/scripts/status/wlan.sh interface`
+			ifstats -I $if -g $n2
+			;;
+		client#)
+			wl assoclist | pfile -c
+			;;
+		client:*)
+			n3=`echo $n2 | scut -p client:`
+			n4=`echo $2 | cut -d/ -f3`
+			data=`wl assoclist | pfile -l$n3`
+			mac=`echo $data | scut -f 2`
+			case "$n4" in
+			time)
+				wl sta_info $mac | scut -p "in network"
+				;;
+			mac)
+				echo $mac 
+				;;
+			powerSave)
+				;;
+			rate)
+				wl rate | scut -f 3 -n 2
+				;;
+			rssi)
+				;;
+			mode)
+				n5=`wl assoclist | pfile -l $n3`
+				macaddr=`echo $n5 | scut -f 2`
+				ratesetLine=`wl sta_info $macaddr | grep "rateset"`
+				mode=`echo $ratesetLine | scut -p "48"`
+				if [ "$mode" = "54" ]; then
+					echo 11g
+				else
+					echo 11b
+				fi
+				;;
+			esac
+			;;
+		esac
+		;;
+	esac
+	;;
+-s)
+	case "$2" in
+	naptsession)
+		/usr/sbin/asession
+		;;
+	resetcounter)
+			echo `rgdb -i -g /runtime/layout/wanif` > /proc/driver/ifresetcnt
+			rgdb -i -s /runtime/stats/wan/inf:1/rx/packets 0
+			rgdb -i -s /runtime/stats/wan/inf:1/tx/packets 0
+			echo `rgdb -i -g /runtime/layout/lanif` > /proc/driver/ifresetcnt
+			rgdb -i -s /runtime/stats/lan/rx/packets 0
+			rgdb -i -s /runtime/stats/lan/tx/packets 0
+			echo `rgdb -i -g /runtime/layout/wlanif` > /proc/driver/ifresetcnt
+			rgdb -i -s /runtime/stats/wireless/rx/packets 0
+			rgdb -i -s /runtime/stats/wireless/tx/packets 0
+#		fi
+#		WLIF_A=`scut -p WLIF11a= $layout_config`
+#		if [ "$WLIF_A" != "" ]; then
+#			echo $WLIF_A > /proc/driver/ifresetcnt
+#			rgdb -i -s /runtime/stats/wireless11a/rx/packets 0
+#			rgdb -i -s /runtime/stats/wireless11a/tx/packets 0
+#		fi
+		;;
+	*)
+		echo $usage
+		exit 9
+		;;
+	esac
+	;;
+*)
+	echo $usage
+	exit 9
+	;;
+esac
+exit 0

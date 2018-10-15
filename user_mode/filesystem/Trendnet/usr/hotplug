@@ -1,0 +1,22 @@
+#!/bin/sh
+
+APP_USBMOUNT2_FILE=/var/run/usbmount2.pid
+
+if [ ! -e $APP_USBMOUNT2_FILE ]; then
+	sleep 2
+fi
+
+usbmount2_pid="`cat /var/run/usbmount2.pid`"
+
+case "${ACTION}" in
+ add)
+   sleep 1
+   kill -USR1 $usbmount2_pid
+  ;;
+ remove)
+   sleep 1
+   kill -USR2 $usbmount2_pid
+  ;;
+
+esac
+

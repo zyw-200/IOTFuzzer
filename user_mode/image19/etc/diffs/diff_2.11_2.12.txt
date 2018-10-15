@@ -1,0 +1,9 @@
+system:wlanSettings:wlanSettingTable:wlan0:accessControlPolicy 0
+system:vapSettings:vapSettingTable:wlan0:vap0:accessControlMode 0
+system:vapSettings:vapSettingTable:wlan0:vap1:accessControlMode 0
+system:vapSettings:vapSettingTable:wlan0:vap2:accessControlMode 0
+system:vapSettings:vapSettingTable:wlan0:vap3:accessControlMode 0
+system:vapSettings:vapSettingTable:wlan0:vap4:accessControlMode 0
+system:vapSettings:vapSettingTable:wlan0:vap5:accessControlMode 0
+system:vapSettings:vapSettingTable:wlan0:vap6:accessControlMode 0
+system:vapSettings:vapSettingTable:wlan0:vap7:accessControlMode 0

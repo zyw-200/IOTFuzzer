@@ -1,0 +1,182 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script src="rsa_64.js"></script>
+<script src="text.js"></script>
+<script>
+function QueryString()
+{
+    var name,value,i;
+    var str=location.href;
+    var num=str.indexOf("?")
+            str=str.substr(num+1);
+    var arrtmp=str.split("&");
+    for(i=0; i < arrtmp.length; i++)
+    {
+        num=arrtmp[i].indexOf("=");
+        if(num>0)
+        {
+            name=arrtmp[i].substring(0,num);
+            value=arrtmp[i].substr(num+1);
+            this[name]=value;
+        }
+    }
+}
+
+function check()
+{
+	form1.ca_submit.disabled=true;
+
+	var rsa = new RSAKey();
+	rsa.setPublic(n,e);
+	
+	var plain_name=form1.ca_name.value;
+	plain_name=BASE64.encoder(plain_name);
+	var res_name = rsa.encrypt(plain_name);
+	var cipherb16_name = linebrk(res_name,64);
+	form1.ca_name.value = cipherb16_name;
+	
+	var plain_pass=form1.ca_pass.value;
+	plain_pass=BASE64.encoder(plain_pass);
+	var res_pass = rsa.encrypt(plain_pass);
+	var cipherb16_pass = linebrk(res_pass,64);
+	form1.ca_pass.value = cipherb16_pass;
+	
+	document.getElementById("form_header").style.display="none";
+	document.getElementById("box_header").style.display="";		
+}
+
+var Request=new QueryString();
+var cur_ssid=Request["ssid"];
+var key=Request["key"];
+var type=Request["type"];
+
+function InitInput()
+{
+
+	document.getElementById("login_license_submit").value=login;
+	document.getElementById("LicenseContent").value=license_content;
+	document.getElementById("input_key").value = key;
+	document.getElementById ("input_name").value = "";
+	document.getElementById ("input_pass").value = "";
+
+	document.getElementById("tr_pass").style.display="";
+			
+	if(type == 1 || type == 2)
+	{
+		document.getElementById("tr_name").style.display="";
+		document.getElementById("tip_password").style.display="";
+	}
+	else
+	{
+		document.getElementById("tip_passcode").style.display="";
+	}
+
+	if(type == 2 || type == 4)
+	{
+		document.getElementById("tr_fail").style.display="";
+	}
+	
+	var checkbox = document.getElementById ("license_check");
+	OnChangeCheckbox(checkbox);
+}
+
+function OnChangeCheckbox (checkbox) {
+	if (checkbox.checked) {
+		EnableSubmit(true);		
+	}
+	else {
+		EnableSubmit(false);		
+	}
+}
+
+function EnableSubmit(enable)
+{
+	if(enable){
+		document.getElementById("login_license_submit").disabled = false;
+		document.getElementById("login_license_submit").style.opacity= 1;
+	} else {
+		document.getElementById("login_license_submit").disabled = true;
+		document.getElementById("login_license_submit").style.opacity= 0.2;
+	}	
+}
+</script>
+<link rel="stylesheet" href="router.css" type="text/css">
+<title></title>
+</head>
+<body onload="InitInput();" leftmargin="0" topmargin="0" class="login_license" style="overflow-x: auto; overflow-y: auto;" marginheight="0" marginwidth="0">
+<center>
+<!-- ________________________________ Main Content Start ______________________________ -->
+	<table class="login_license_table">
+		<tr>
+			<td colspan="3">
+				<img id="login_header_pic_logo" src="logo.png" style="padding: 20px 0 0 20px">
+			</td>
+		</tr>
+		<tr class="login_license_header_margin"></tr>
+		<tr>
+			<td class="login_license_main_header" colspan="3"><script>document.write(main_title);</script></td>
+		</tr>
+		<tr class="table_margin_20px"></tr>
+		<tr>
+			<td style="text-align: center" colspan="3">
+				<textarea rows="15" cols="50" disabled id="LicenseContent" class="login_license_license_textarea"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3" class="login_license_license_accept_td">
+				<input id="license_check" onclick="OnChangeCheckbox(this);" type="checkbox" style="vertical-align: middle;"><script>document.write(license_accept);</script>
+			</td>
+		</tr>
+		<tr class="table_margin_10px"></tr>
+		<tr>
+			<td colspan="3" class="login_license_notice"><script>document.write(ssid_notice);</script><script>document.write(cur_ssid);</script></td>
+		</tr>
+		<tr >
+			<td colspan="3" class="login_license_notice"><script>document.write(input_notice);</script></td>
+		</tr>		
+		<tr>
+			<td id="form_header" style="display:block">
+			<form name=form1 action="/submit.html" method="post" onsubmit="return check()" style="height: 198px; width: 100%;">
+				<table style="border-spacing: 0; margin: 0 auto; width:100%">
+					<tr class="table_margin_10px"></tr>
+					<tr id="tr_key" style="display:none">
+						<td><input id="input_key" type="text" name="ca_key"/></td>						
+					</tr>					
+					<tr id="tr_name" style="display:none" style="height: 37px">						
+						<td class="login_license_input_left"><script>document.write(username);</script></td>
+						<td><input id="input_name" type="text" name="ca_name" maxlength="64" class="login_license_input"/></td>						
+						<td class="login_license_input_right"></td>						
+					</tr>
+					<tr class="table_margin_10px"></tr>
+					<tr id="tr_pass" style="display:none" style="height: 37px">						
+						<td id="tip_password" style="display:none" class="login_license_input_left"><script>document.write(password);</script></td>
+						<td id="tip_passcode" style="display:none" class="login_license_input_left"><script>document.write(passcode);</script></td>
+						<td><input id="input_pass" type="password" name="ca_pass" maxlength="64" class="login_license_input"/></td>						
+						<td class="login_license_input_right"></td>						
+					</tr>
+					<tr class="table_margin_10px"></tr>
+					<tr>
+						<td colspan="3" class="login_license_submit_td"><input id="login_license_submit" disabled type="submit" name="ca_submit" value="$login" class="login_license_login_button"/></td>					
+					</tr>	
+					<tr class="table_margin_10px"></tr>						
+					<tr id="tr_fail" style="display:none;">
+						<td colspan="3" style="text-align: center; font-size: 15px; color: #FF0000"><script>document.write(fail);</script></td>
+					</tr>	
+				</table>
+			</form>		
+			</td>
+			<td id="box_header" style="display:none">
+			<form style="height: 148px; width: 100%;">
+				<table style="border-spacing: 0; margin: 0 auto; width:100%">					
+					<tr style="height: 40px;"></tr>														
+					<tr><td colspan="3" style="text-align: center; font-size: 30px; color: #FE7F02"><script>document.write(process);</script></td></tr>
+				</table>
+			</form>
+			</td>			
+		</tr>
+	</table>
+</center>
+</body>
+</html>

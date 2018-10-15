@@ -1,0 +1,2 @@
+V	391231235959Z		01	unknown	/CN=DefaultCA
+V	391231235959Z		02	unknown	/CN=DefaultClient

@@ -1,0 +1,17 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="test/html;charset=utf-8">
+<script language="javascript">
+function sub(){
+    form1.submit();
+    }
+</script>
+<body onload="sub();">
+<div align=center style=display:none;>
+<form name=form1 action="/submit.html" method="post">
+<p>UserName: <input type="text" name="ca_name" /></p>
+<p>Password : <input type="password" name="ca_pass" /></p>
+<input type="submit" value="Submit" />
+</div>
+</body>
+</html>

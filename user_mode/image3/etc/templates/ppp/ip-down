@@ -1,0 +1,22 @@
+#!/bin/sh
+echo [$0]: ifname[$1] device[$2] speed[$3] ip[$4] remote[$5] param[$6] > /dev/console
+TROOT=`rgdb -i -g /runtime/template_root`
+[ "$TROOT" = "" ] && TROOT="/etc/templates"
+
+WANIF="/runtime/wan/inf:1"
+rm -f /var/etc/ppp/resolv.conf.$6 > /dev/console
+rgdb -i -s $WANIF/connectstatus disconnected
+#rgdb -i -s $WANIF/ip ""
+#rgdb -i -s $WANIF/netmask ""
+#rgdb -i -s $WANIF/gateway ""
+#rgdb -i -s $WANIF/primarydns ""
+#rgdb -i -s $WANIF/secondarydns ""
+rgdb -i -s $WANIF/domain ""
+rgdb -i -s $WANIF/interface ""
+rgdb -i -s $WANIF/uptime ""
+rgdb -i -s $WANIF/sessionid ""
+rgdb -i -s $WANIF/mtu ""
+
+rgdb -A $TROOT/ppp/session_down.php > /var/run/session_down.sh
+sh /var/run/session_down.sh $6 > /dev/console
+exit 0
